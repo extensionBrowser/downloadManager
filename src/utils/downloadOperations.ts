@@ -3,7 +3,6 @@
  */
 
 import type { DownloadItem } from '@/types/download'
-import { resumeDownload } from './downloadControl'
 
 /**
  * 打开文件
@@ -142,90 +141,40 @@ const extractFilename = (downloadItem: DownloadItem): string | undefined => {
   return undefined
 }
 
-export const retryDownload = async(downloadItem: DownloadItem): Promise<{ resumed: boolean; newDownloadId?: number; oldDownloadId?: number }> => {
-  try {
-    // 首先尝试恢复现有下载（如果下载项仍然存在且可以恢复）
-    if (downloadItem.id) {
-      try {
-        // 查询下载项，检查是否仍然存在
-        const results = await new Promise<chrome.downloads.DownloadItem[]>((resolve, reject) => {
-          chrome.downloads.search({ id: downloadItem.id }, (results: chrome.downloads.DownloadItem[]) => {
-            if (chrome.runtime.lastError) {
-              reject(chrome.runtime.lastError)
-            } else {
-              resolve(results)
-            }
-          })
-        })
+/**
+ * 重新下载
+ * 按照浏览器默认逻辑：只创建新下载，不删除或替换旧记录
+ * 让浏览器的 onCreated 和 onChanged 事件自动处理
+ */
+export const retryDownload = async(downloadItem: DownloadItem): Promise<{ newDownloadId: number }> => {
+  if (!downloadItem?.url) {
+    throw new Error('Download URL is required')
+  }
 
-        // 如果下载项存在且可以恢复，尝试恢复
-        if (results.length > 0 && results[0]) {
-          const existingItem = results[0]
+  const filename = extractFilename(downloadItem)
 
-          // 检查状态：如果是暂停或中断状态，且可以恢复
-          const isPaused = existingItem.state === 'in_progress' && existingItem.paused
-          const isInterrupted = existingItem.state === 'interrupted'
-          const canResume = existingItem.canResume === true
+  const downloadOptions: chrome.downloads.DownloadOptions = {
+    url: downloadItem.url
+  }
 
-          if ((isPaused || isInterrupted) && canResume) {
-            try {
-              await resumeDownload(downloadItem.id)
-              return { resumed: true }
-            } catch {
-              try {
-                await chrome.downloads.erase({ id: downloadItem.id })
-              } catch (eraseError) {
-                console.warn('Failed to erase old download record:', eraseError)
-              }
-            }
-          } else {
-            try {
-              await chrome.downloads.erase({ id: downloadItem.id })
-            } catch (eraseError) {
-              console.warn('Failed to erase old download record:', eraseError)
-            }
-          }
-        }
-      } catch {
-        // 下载项不存在，直接创建新下载
+  if (filename) {
+    downloadOptions.filename = filename
+  }
+
+  const newDownloadId = await new Promise<number>((resolve, reject) => {
+    chrome.downloads.download(downloadOptions, (downloadId) => {
+      if (chrome.runtime.lastError) {
+        const error = new Error(chrome.runtime.lastError.message)
+        console.error('Failed to create new download:', error)
+        reject(error)
+      } else {
+        resolve(downloadId)
       }
-    }
-    const oldDownloadId = downloadItem.id
-
-    const filename = extractFilename(downloadItem)
-
-    if (!downloadItem?.url) {
-      throw new Error('Download URL is required')
-    }
-
-    const downloadOptions: chrome.downloads.DownloadOptions = {
-      url: downloadItem.url
-    }
-
-    if (filename) {
-      downloadOptions.filename = filename
-    }
-
-    const newDownloadId = await new Promise<number>((resolve, reject) => {
-      chrome.downloads.download(downloadOptions, (downloadId) => {
-        if (chrome.runtime.lastError) {
-          const error = new Error(chrome.runtime.lastError.message)
-          console.error('Failed to create new download:', error)
-          reject(error)
-        } else {
-          resolve(downloadId)
-        }
-      })
     })
+  })
 
-    return {
-      resumed: false,
-      newDownloadId,
-      oldDownloadId
-    }
-  } catch (error) {
-    console.error('Failed to retry download:', error)
-    throw error
+  return {
+    newDownloadId
   }
 }
 

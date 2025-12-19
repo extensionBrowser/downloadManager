@@ -61,7 +61,7 @@
 
     <!-- 分页组件 -->
     <div
-      v-if="!isLoading && total > 0"
+      v-if="!isLoading && total > 0 && !useScrollLoad"
       class="pagination-wrapper"
     >
       <el-pagination
@@ -75,6 +75,26 @@
         @currentChange="handlePageChange"
         @sizeChange="handleSizeChange"
       />
+    </div>
+
+    <!-- 滚动加载提示 -->
+    <div
+      v-if="!isLoading && useScrollLoad && hasMoreItems"
+      class="scroll-load-hint"
+    >
+      <div class="hint-text">
+        {{ t('scrollLoadMoreHint') }}
+      </div>
+    </div>
+
+    <!-- 滚动加载完成提示 -->
+    <div
+      v-if="!isLoading && useScrollLoad && !hasMoreItems && total > 0"
+      class="scroll-load-complete"
+    >
+      <div class="complete-text">
+        {{ t('scrollLoadComplete') }}
+      </div>
     </div>
 
     <!-- 滚动到顶部按钮 -->
@@ -94,7 +114,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Top } from '@element-plus/icons-vue'
 import type { DownloadItem } from '@/types/download'
@@ -105,15 +125,19 @@ const props = defineProps<{
   currentPage: number
   pageSize: number
   total: number
+  useScrollLoad?: boolean
+  hasMoreItems?: boolean
 }>()
 
 const emit = defineEmits<{
   pageChange: [page: number]
   sizeChange: [size: number]
+  loadMore: []
 }>()
 
 const { t } = useI18n()
-const listContainerRef = ref()
+const listContainerRef = ref<HTMLElement | null>(null)
+const isLoadingMore = ref(false)
 
 const handlePageChange = (page: number) => {
   emit('pageChange', page)
@@ -131,10 +155,67 @@ const handleSizeChange = (size: number) => {
   }
 }
 
+// 滚动加载处理
+const handleScroll = () => {
+  if (!props.useScrollLoad || isLoadingMore.value || !props.hasMoreItems) {
+    return
+  }
+
+  const container = listContainerRef.value
+  if (!container) {
+    return
+  }
+
+  // 计算滚动位置，当滚动到距离底部 200px 时加载更多
+  const scrollTop = container.scrollTop
+  const scrollHeight = container.scrollHeight
+  const clientHeight = container.clientHeight
+  const distanceToBottom = scrollHeight - scrollTop - clientHeight
+
+  if (distanceToBottom < 200) {
+    isLoadingMore.value = true
+    emit('loadMore')
+    // 延迟重置加载状态，避免频繁触发
+    setTimeout(() => {
+      isLoadingMore.value = false
+    }, 300)
+  }
+}
+
 // 监听当前页变化，滚动到顶部
 watch(() => props.currentPage, () => {
+  if (listContainerRef.value && !props.useScrollLoad) {
+    listContainerRef.value.scrollTop = 0
+  }
+})
+
+// 监听滚动加载模式变化，重置滚动位置
+watch(() => props.useScrollLoad, () => {
   if (listContainerRef.value) {
     listContainerRef.value.scrollTop = 0
+  }
+})
+
+onMounted(() => {
+  if (listContainerRef.value && props.useScrollLoad) {
+    listContainerRef.value.addEventListener('scroll', handleScroll)
+  }
+})
+
+onUnmounted(() => {
+  if (listContainerRef.value) {
+    listContainerRef.value.removeEventListener('scroll', handleScroll)
+  }
+})
+
+// 监听滚动加载模式变化，添加/移除滚动监听器
+watch(() => props.useScrollLoad, (newVal) => {
+  if (listContainerRef.value) {
+    if (newVal) {
+      listContainerRef.value.addEventListener('scroll', handleScroll)
+    } else {
+      listContainerRef.value.removeEventListener('scroll', handleScroll)
+    }
   }
 })
 </script>
@@ -164,6 +245,38 @@ watch(() => props.currentPage, () => {
   border-top: 1px solid var(--el-border-color-lighter);
   background: var(--el-bg-color);
   min-height: 48px;
+}
+
+.scroll-load-hint {
+  padding: 12px 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-top: 1px solid var(--el-border-color-lighter);
+  background: var(--el-bg-color);
+  min-height: 40px;
+
+  .hint-text {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+    text-align: center;
+  }
+}
+
+.scroll-load-complete {
+  padding: 12px 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-top: 1px solid var(--el-border-color-lighter);
+  background: var(--el-bg-color);
+  min-height: 40px;
+
+  .complete-text {
+    font-size: 12px;
+    color: var(--el-text-color-placeholder);
+    text-align: center;
+  }
 
   :deep(.el-pagination) {
     .el-pagination__total {

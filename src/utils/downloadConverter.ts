@@ -2,9 +2,9 @@
  * 下载项转换工具
  */
 
+import { useDownloadStore } from '@/store/download'
 import type { DownloadItem } from '@/types/download'
 import { DownloadStatus } from '@/types/download'
-import { useDownloadStore } from '@/store/download'
 
 /**
  * 从 URL 提取文件名
@@ -105,9 +105,20 @@ export const convertChromeDownload = (chromeDownload: chrome.downloads.DownloadI
 
   let status: DownloadStatus = DownloadStatus.DOWNLOADING
   if (chromeDownload.state === 'complete') {
-    status = DownloadStatus.COMPLETED
+    // 如果文件已完成但不存在，标记为已删除
+    if (chromeDownload.exists === false) {
+      status = DownloadStatus.DELETED
+    } else {
+      status = DownloadStatus.COMPLETED
+    }
   } else if (chromeDownload.state === 'interrupted') {
-    status = chromeDownload.paused ? DownloadStatus.PAUSED : DownloadStatus.FAILED
+    // 如果下载被中断，根据 canResume 判断状态
+    // canResume=true 表示可以恢复（暂停），canResume=false 表示失败
+    if (chromeDownload.canResume === true) {
+      status = DownloadStatus.PAUSED
+    } else {
+      status = DownloadStatus.FAILED
+    }
   } else if (chromeDownload.state === 'in_progress') {
     status = chromeDownload.paused ? DownloadStatus.PAUSED : DownloadStatus.DOWNLOADING
   }

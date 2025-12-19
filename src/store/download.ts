@@ -2,10 +2,10 @@
  * 下载管理 Store
  */
 
-import { defineStore } from 'pinia'
-import { ref, computed, watch } from 'vue'
 import type { DownloadItem, FilterOptions, SortOptions } from '@/types/download'
 import { DownloadStatus, FileType, SortBy, SortOrder } from '@/types/download'
+import { defineStore } from 'pinia'
+import { computed, ref, watch } from 'vue'
 
 export const useDownloadStore = defineStore('download', () => {
   // 状态
@@ -53,6 +53,12 @@ export const useDownloadStore = defineStore('download', () => {
   const paginationSettings = loadPaginationSettings()
   const currentPage = ref<number>(paginationSettings.currentPage)
   const pageSize = ref<number>(paginationSettings.pageSize)
+
+  // 滚动加载相关状态
+  const scrollLoadSize = ref<number>(10) // 当前滚动加载显示的数量，默认10条
+
+  // 标记是否已完成初始加载
+  const isInitialLoadComplete = ref<boolean>(false)
 
   // 用于计算下载速度的缓存数据
   const downloadSpeedCache = ref<Map<number, { bytesReceived: number; timestamp: number }>>(new Map())
@@ -127,6 +133,11 @@ export const useDownloadStore = defineStore('download', () => {
     return sortedDownloads.value.slice(start, end)
   })
 
+  // 计算属性：滚动加载后的下载列表
+  const scrollLoadDownloads = computed(() => {
+    return sortedDownloads.value.slice(0, scrollLoadSize.value)
+  })
+
   // 计算属性：总页数
   const totalPages = computed(() => {
     return Math.ceil(sortedDownloads.value.length / pageSize.value)
@@ -166,12 +177,22 @@ export const useDownloadStore = defineStore('download', () => {
 
   /**
    * 添加下载项
+   * @param prepend 是否添加到列表最前面（新下载时使用，保持与浏览器顺序一致）
+   * @param forcePrepend 强制添加到最前面（即使已存在，也会移到最前面，用于重新下载）
+   * @param isNewDownload 是否是新下载（重新下载时的新记录），如果是，不保留旧记录的时间
    */
-  const addDownload = (item: DownloadItem) => {
+  const addDownload = (item: DownloadItem, prepend = false, forcePrepend = false, isNewDownload = false) => {
     const itemWithPreservedTimeBase = applyPreservedDownloadTime({ ...item })
 
     let itemWithPreservedTime = itemWithPreservedTimeBase
-    if (!preservedDownloadTimes.value.has(itemWithPreservedTime.url)) {
+    // 初始加载时，不保留旧记录的时间，直接使用浏览器返回的 startTime
+    // 只有在运行时更新旧记录时，才保留旧记录的时间（用于显示历史时间）
+    // 如果是新下载（重新下载时的新记录），也不保留旧记录的时间
+    if (!isInitialLoadComplete.value && !isNewDownload && !forcePrepend && !preservedDownloadTimes.value.has(itemWithPreservedTime.url)) {
+      // 初始加载时，不保留时间，直接使用浏览器返回的时间
+      // 这样确保排序时使用正确的 startTime
+    } else if (isInitialLoadComplete.value && !isNewDownload && !forcePrepend && !preservedDownloadTimes.value.has(itemWithPreservedTime.url)) {
+      // 运行时更新：保留旧记录的时间
       const oldItemByUrl = downloads.value.find((d: DownloadItem) => d.url === itemWithPreservedTime.url && d.id !== itemWithPreservedTime.id)
       if (oldItemByUrl) {
         itemWithPreservedTime = {
@@ -185,15 +206,32 @@ export const useDownloadStore = defineStore('download', () => {
     const index = downloads.value.findIndex((d: DownloadItem) => d.id === itemWithPreservedTime.id)
     if (index >= 0) {
       const existing = downloads.value[index]
-      if (existing) {
+      // 初始加载时，不保留现有项的时间，直接使用浏览器返回的时间
+      // 如果是新下载（重新下载），不保留现有项的时间，使用新的 startTime
+      // 只有在运行时更新旧记录时，才保留现有项的时间
+      if (isInitialLoadComplete.value && existing && !forcePrepend && !isNewDownload) {
         if (!preservedDownloadTimes.value.has(itemWithPreservedTime.url) && existing.startTime < itemWithPreservedTime.startTime) {
           itemWithPreservedTime.startTime = existing.startTime
           itemWithPreservedTime.endTime = existing.endTime
         }
       }
-      downloads.value[index] = itemWithPreservedTime
+      
+      // 如果 forcePrepend 为 true，将项移到最前面（用于重新下载）
+      if (forcePrepend && index !== 0) {
+        downloads.value.splice(index, 1)
+        downloads.value.unshift(itemWithPreservedTime)
+      } else {
+        // 普通更新：保持原位置，只更新数据
+        downloads.value[index] = itemWithPreservedTime
+      }
     } else {
-      downloads.value.push(itemWithPreservedTime)
+      // 如果是新下载，根据 prepend 参数决定插入位置
+      // prepend=true 时插入到最前面（新下载），prepend=false 时添加到末尾（初始加载）
+      if (prepend) {
+        downloads.value.unshift(itemWithPreservedTime)
+      } else {
+        downloads.value.push(itemWithPreservedTime)
+      }
     }
   }
 
@@ -330,6 +368,10 @@ export const useDownloadStore = defineStore('download', () => {
    */
   const setLoading = (loading: boolean) => {
     isLoading.value = loading
+    // 当加载完成时，标记初始加载完成
+    if (!loading) {
+      isInitialLoadComplete.value = true
+    }
   }
 
   /**
@@ -378,9 +420,27 @@ export const useDownloadStore = defineStore('download', () => {
     savePaginationSettings(currentPage.value, pageSize.value)
   }
 
+  // 滚动加载：加载更多项
+  const loadMoreItems = (loadSize: number = 10) => {
+    const total = sortedDownloads.value.length
+    scrollLoadSize.value = Math.min(scrollLoadSize.value + loadSize, total)
+  }
+
+  // 重置滚动加载
+  const resetScrollLoad = (initialSize: number = 10) => {
+    scrollLoadSize.value = initialSize
+  }
+
+  // 检查是否还有更多项可以加载
+  const hasMoreItems = computed(() => {
+    return scrollLoadSize.value < sortedDownloads.value.length
+  })
+
   // 监听筛选条件变化，重置到第一页（但不保存，因为这是临时重置）
   watch([filterOptions, sortOptions], () => {
     currentPage.value = 1
+    // 重置滚动加载
+    resetScrollLoad(10)
   }, { deep: true })
 
   return {
@@ -391,12 +451,15 @@ export const useDownloadStore = defineStore('download', () => {
     isLoading,
     currentPage,
     pageSize,
+    scrollLoadSize,
     // Computed
     filteredDownloads,
     sortedDownloads,
     paginatedDownloads,
+    scrollLoadDownloads,
     totalPages,
     stats,
+    hasMoreItems,
     // Actions
     addDownload,
     updateDownload,
@@ -411,6 +474,8 @@ export const useDownloadStore = defineStore('download', () => {
     clearSpeedCache,
     setLoading,
     setCurrentPage,
-    setPageSize
+    setPageSize,
+    loadMoreItems,
+    resetScrollLoad
   }
 })

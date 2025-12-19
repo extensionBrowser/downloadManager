@@ -6,7 +6,8 @@ export enum DownloadStatus {
   COMPLETED = 'completed',
   PAUSED = 'paused',
   FAILED = 'failed',
-  CANCELLED = 'cancelled'
+  CANCELLED = 'cancelled',
+  DELETED = 'deleted' // 文件已删除
 }
 
 /**
@@ -67,6 +68,8 @@ export interface DownloadSettings {
   openFolder: boolean // 下载完成后打开文件夹
   showNotification: boolean // 显示通知
   playSound: boolean // 播放声音
+  useScrollLoad: boolean // 使用滚动加载（false 为分页模式）
+  scrollLoadInitialSize: number // 滚动加载初始显示数量
 }
 
 /**

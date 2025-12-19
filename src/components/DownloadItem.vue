@@ -83,8 +83,7 @@ const statusClass = computed(() => `status-${props.downloadItem.status}`)
 
 // 检查文件是否已删除
 const isFileDeleted = computed(() => {
-  // 已完成状态但文件不存在，标记为已删除
-  return props.downloadItem.status === 'completed' && props.downloadItem.exists === false
+  return props.downloadItem.status === DownloadStatus.DELETED
 })
 
 const fileIcon = computed(() => {
@@ -287,97 +286,16 @@ const handleRetry = async(silent = false) => {
   // 设置 loading 状态
   isRetrying.value = true
 
-  // 立即更新状态为 downloading，提供即时反馈
-  // 清除 error 字段，避免显示警告图标
-  downloadStore.updateDownload(props.downloadItem.id, {
-    status: DownloadStatus.DOWNLOADING,
-    progress: props.downloadItem.progress || 0,
-    speed: 0,
-    error: undefined
-  })
+  // 注意：不应该更新旧记录的状态，只创建新下载
+  // 旧记录应该保持其原有状态（失败或暂停），新下载会通过 onCreated 事件自动添加
 
   try {
-    // retryDownload 会先尝试恢复现有下载，如果无法恢复才创建新下载
-    const result = await retryDownload(props.downloadItem)
+    // 按照浏览器默认逻辑：只创建新下载，让浏览器的 onCreated 和 onChanged 事件自动处理
+    await retryDownload(props.downloadItem)
 
-    if (result.resumed) {
-      // 恢复成功，立即显示成功消息（onChanged 事件会自动更新 store）
-      if (!silent) {
-        ElMessage.success($t('messageResumeSuccess'))
-      }
-    } else if (result.newDownloadId && result.oldDownloadId) {
-      // 创建了新下载，使用 replaceDownloadById 实现无感替换
-      // 先创建临时下载项
-      const tempDownloadItem: IDownloadItem = {
-        id: result.newDownloadId,
-        name: props.downloadItem.name,
-        url: props.downloadItem.url,
-        path: props.downloadItem.path,
-        size: props.downloadItem.size,
-        receivedBytes: props.downloadItem.receivedBytes || 0,
-        progress: props.downloadItem.progress || 0,
-        status: DownloadStatus.DOWNLOADING,
-        speed: 0,
-        startTime: props.downloadItem.startTime,
-        endTime: props.downloadItem.endTime,
-        error: undefined,
-        mimeType: props.downloadItem.mimeType,
-        fileType: props.downloadItem.fileType,
-        canResume: undefined
-      }
-
-      // 使用 replaceDownloadById 替换，直接更新数组项，避免触发 transition-group 动画
-      const replaced = downloadStore.replaceDownloadById(result.oldDownloadId, tempDownloadItem)
-      if (!replaced) {
-        // 如果替换失败，使用 replaceDownloadByUrl 作为备选方案
-        const replacedByUrl = downloadStore.replaceDownloadByUrl(props.downloadItem.url, tempDownloadItem)
-        if (!replacedByUrl) {
-          // 如果都失败，直接添加
-          downloadStore.addDownload(tempDownloadItem)
-        }
-      }
-
-      // 后续查询真实数据并更新（onChanged 事件也会自动更新，这里作为补充）
-      // 使用异步方式，不阻塞 UI
-      setTimeout(async() => {
-        try {
-          const results = await new Promise<chrome.downloads.DownloadItem[]>((resolve, reject) => {
-            chrome.downloads.search({ id: result.newDownloadId }, (results: chrome.downloads.DownloadItem[]) => {
-              if (chrome.runtime.lastError) {
-                reject(chrome.runtime.lastError)
-              } else {
-                resolve(results)
-              }
-            })
-          })
-
-          if (results.length > 0 && results[0]) {
-            const newDownloadItem = convertChromeDownload(results[0])
-            if (newDownloadItem !== null && result.newDownloadId) {
-              // 优先使用 replaceDownloadById 更新，避免触发动画
-              const replaced = downloadStore.replaceDownloadById(result.newDownloadId, newDownloadItem)
-              if (!replaced) {
-                // 如果替换失败，使用 replaceDownloadByUrl 作为备选
-                const replacedByUrl = downloadStore.replaceDownloadByUrl(props.downloadItem.url, newDownloadItem)
-                if (!replacedByUrl) {
-                  // 如果都失败，使用 addDownload（可能已经被 onCreated 事件添加了）
-                  downloadStore.addDownload(newDownloadItem)
-                }
-              }
-            }
-          }
-        } catch {
-          // 查询失败不影响，onChanged 事件会自动更新
-        }
-      }, 100)
-
-      if (!silent) {
-        ElMessage.success($t('messageRetrySuccess'))
-      }
-    } else {
-      if (!silent) {
-        ElMessage.success($t('messageRetrySuccess'))
-      }
+    // 显示成功消息，浏览器事件会自动更新 store
+    if (!silent) {
+      ElMessage.success($t('messageRetrySuccess'))
     }
   } catch (error) {
     console.error('Retry download error:', error)
@@ -524,16 +442,58 @@ const handleCommand = async(command: string) => {
     border-left: 3px solid $warning-color;
   }
 
-  // 文件已删除的特殊样式
+  // 文件已删除的特殊样式 - 使用禁用状态的色调，更明显
   &.file-deleted {
-    background: rgba($error-color, 0.08);
-    opacity: 0.7;
-    border-left: 3px solid rgba(128, 128, 128, 0.6); // 灰色边框
-
-    &:hover {
-      background: rgba($error-color, 0.12);
+    // 使用禁用状态的背景色和边框色
+    background: var(--el-disabled-bg-color, #f5f7fa);
+    border-left: 3px solid var(--el-disabled-border-color, #e4e7ed);
+    
+    // 文件名称使用接近正常文本的颜色（regular），保持清晰可读
+    // 通过删除线、斜体和背景色来表明已删除状态，而不是通过降低文字颜色
+    .file-name {
+      color: var(--el-text-color-regular, #374151); // 使用 regular 颜色，接近正常文本，确保清晰可读
+      text-decoration: line-through;
+      text-decoration-color: var(--el-text-color-regular, #374151);
+      font-style: italic;
+      opacity: 1; // 完全不透明，确保最佳可读性
+    }
+    
+    .file-meta,
+    .download-details {
+      color: var(--el-text-color-secondary, #4b5563); // 使用 secondary 颜色，保持清晰
       opacity: 0.85;
-      border-left-color: rgba(128, 128, 128, 0.8); // hover 时稍微加深
+    }
+    
+    .file-icon {
+      opacity: 0.7;
+      filter: grayscale(40%); // 降低灰度滤镜强度，保持可见度
+    }
+    
+    // 下载来源也使用禁用颜色
+    .download-source {
+      color: var(--el-text-color-placeholder, #9ca3af);
+      opacity: 0.8;
+      
+      .source-link {
+        color: var(--el-text-color-placeholder, #9ca3af);
+        
+        &:hover {
+          color: var(--el-text-color-placeholder, #9ca3af);
+          text-decoration: underline;
+        }
+      }
+    }
+    
+    // 整体稍微降低不透明度，但保持可读性
+    opacity: 0.85;
+    
+    // 禁用 hover 效果，保持禁用状态
+    &:hover {
+      background: var(--el-disabled-bg-color, #f5f7fa);
+      opacity: 0.9; // hover 时稍微提高一点，但保持禁用感
+      border-left-color: var(--el-disabled-border-color, #e4e7ed);
+      transform: none; // 移除 hover 时的位移效果
+      box-shadow: none; // 移除 hover 时的阴影效果
     }
   }
 

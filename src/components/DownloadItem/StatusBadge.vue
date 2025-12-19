@@ -8,7 +8,7 @@
   <div
     v-else
     class="status-badge"
-    :class="`status-${downloadItem.status}`"
+    :class="[`status-${downloadItem.status}`, { 'file-deleted': isFileDeleted }]"
   >
     {{ statusText }}
   </div>
@@ -26,13 +26,19 @@ const props = defineProps<{
 
 const { t: $t } = useI18n()
 
+// 检查文件是否已删除
+const isFileDeleted = computed(() => {
+  return props.downloadItem.status === DownloadStatus.DELETED
+})
+
 const statusText = computed(() => {
   const statusMap: Record<DownloadStatus, string> = {
     [DownloadStatus.DOWNLOADING]: $t('downloadDownloading'),
     [DownloadStatus.COMPLETED]: $t('downloadCompleted'),
     [DownloadStatus.PAUSED]: $t('downloadPaused'),
     [DownloadStatus.FAILED]: $t('downloadFailed'),
-    [DownloadStatus.CANCELLED]: $t('downloadCancelled')
+    [DownloadStatus.CANCELLED]: $t('downloadCancelled'),
+    [DownloadStatus.DELETED]: $t('downloadDeleted')
   }
   const status = props.downloadItem.status as DownloadStatus
   return statusMap[status] || ''
@@ -72,6 +78,17 @@ const statusText = computed(() => {
   &.status-cancelled {
     background: rgba($warning-color, 0.1);
     color: $warning-color;
+  }
+
+  &.status-deleted {
+    background: transparent;
+    color: var(--el-text-color-regular, #606266);
+  }
+  
+  // 文件已删除时，状态标签也使用正常颜色（兼容旧逻辑）
+  &.file-deleted {
+    background: transparent;
+    color: var(--el-text-color-regular, #606266);
   }
 }
 </style>

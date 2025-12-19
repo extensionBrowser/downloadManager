@@ -50,6 +50,46 @@
         </div>
       </div>
     </div>
+
+    <!-- 列表显示设置 -->
+    <div class="settings-section">
+      <div class="section-title">
+        {{ $t('settingsListDisplay') }}
+      </div>
+      <div class="settings-group">
+        <div class="setting-item">
+          <div class="setting-content">
+            <div class="setting-label">
+              {{ $t('settingsUseScrollLoad') }}
+            </div>
+            <div class="setting-description">
+              {{ $t('settingsUseScrollLoadDesc') }}
+            </div>
+          </div>
+          <el-switch v-model="formData.useScrollLoad" />
+        </div>
+        <div
+          v-if="formData.useScrollLoad"
+          class="setting-item nested"
+        >
+          <div class="setting-content">
+            <div class="setting-label">
+              {{ $t('settingsScrollLoadInitialSize') }}
+            </div>
+            <div class="setting-description">
+              {{ $t('settingsScrollLoadInitialSizeDesc') }}
+            </div>
+          </div>
+          <el-input-number
+            v-model="formData.scrollLoadInitialSize"
+            :min="5"
+            :max="50"
+            :step="5"
+            class="retry-input"
+          />
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -71,7 +111,9 @@ import type { DownloadSettings } from '@/types/download'
 const formData = ref<Partial<DownloadSettings>>({
   openFolder: false,
   showNotification: true,
-  playSound: false
+  playSound: false,
+  useScrollLoad: false,
+  scrollLoadInitialSize: 10
 })
 
 onMounted(async() => {
@@ -83,7 +125,9 @@ onMounted(async() => {
   formData.value = {
     openFolder: settings.openFolder ?? false,
     showNotification: settings.showNotification ?? true,
-    playSound: settings.playSound ?? false
+    playSound: settings.playSound ?? false,
+    useScrollLoad: settings.useScrollLoad ?? false,
+    scrollLoadInitialSize: settings.scrollLoadInitialSize ?? 10
   }
 })
 
@@ -92,7 +136,9 @@ async function handleSave() {
     settingsStore.updateDownloadSettings({
       openFolder: formData.value.openFolder,
       showNotification: formData.value.showNotification,
-      playSound: formData.value.playSound
+      playSound: formData.value.playSound,
+      useScrollLoad: formData.value.useScrollLoad,
+      scrollLoadInitialSize: formData.value.scrollLoadInitialSize
     })
 
     // 确保设置已保存到 chrome.storage
@@ -118,12 +164,16 @@ const handleReset = () => {
   settingsStore.updateDownloadSettings({
     openFolder: false,
     showNotification: true,
-    playSound: false
+    playSound: false,
+    useScrollLoad: false,
+    scrollLoadInitialSize: 10
   })
   formData.value = {
     openFolder: false,
     showNotification: true,
-    playSound: false
+    playSound: false,
+    useScrollLoad: false,
+    scrollLoadInitialSize: 10
   }
   ElMessage.success($t('settingsSaveSuccess'))
 }

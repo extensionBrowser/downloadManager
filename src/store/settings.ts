@@ -14,7 +14,9 @@ const SETTINGS_STORAGE_KEY = 'download-manager-settings'
 const defaultDownloadSettings: DownloadSettings = {
   openFolder: false,
   showNotification: true,
-  playSound: false
+  playSound: false,
+  useScrollLoad: false, // 默认使用分页模式
+  scrollLoadInitialSize: 10 // 滚动加载初始显示10条
 }
 
 export const useSettingsStore = defineStore('settings', () => {

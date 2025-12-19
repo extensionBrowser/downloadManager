@@ -18,21 +18,26 @@
       :filterFileType="filterFileType"
       :sortBy="sortBy"
       :sortOrder="sortOrder"
+      :use-scroll-load="useScrollLoad"
       @update:filterStatus="filterStatus = $event"
       @update:filterFileType="filterFileType = $event"
       @update:sortBy="sortBy = $event"
       @toggleSortOrder="toggleSortOrder"
+      @toggleLoadMode="handleToggleLoadMode"
     />
 
     <!-- 下载列表 -->
     <DownloadListContent
       :isLoading="downloadStore.isLoading"
-      :downloads="paginatedDownloads"
+      :downloads="displayDownloads"
       :currentPage="downloadStore.currentPage"
       :pageSize="downloadStore.pageSize"
       :total="sortedDownloads.length"
+      :use-scroll-load="useScrollLoad"
+      :has-more-items="downloadStore.hasMoreItems"
       @pageChange="handlePageChange"
       @sizeChange="handleSizeChange"
+      @loadMore="handleLoadMore"
     >
       <template #default="{ item }">
         <DownloadItem
@@ -96,6 +101,12 @@ onMounted(() => {
   currentTheme.value = settingsStore.theme
   currentLocale.value = settingsStore.locale
   i18nLocale.value = settingsStore.locale
+  
+  // 初始化滚动加载设置
+  if (useScrollLoad.value) {
+    const initialSize = settingsStore.downloadSettings.scrollLoadInitialSize ?? 10
+    downloadStore.resetScrollLoad(initialSize)
+  }
 })
 
 const searchText = ref('')
@@ -159,6 +170,15 @@ watch(
 const stats = computed(() => downloadStore.stats)
 const sortedDownloads = computed(() => downloadStore.sortedDownloads)
 const paginatedDownloads = computed(() => downloadStore.paginatedDownloads)
+const scrollLoadDownloads = computed(() => downloadStore.scrollLoadDownloads)
+
+// 根据设置决定使用分页还是滚动加载
+const useScrollLoad = computed(() => settingsStore.downloadSettings.useScrollLoad ?? false)
+
+// 显示的下载列表
+const displayDownloads = computed(() => {
+  return useScrollLoad.value ? scrollLoadDownloads.value : paginatedDownloads.value
+})
 
 const handlePageChange = (page: number) => {
   downloadStore.setCurrentPage(page)
@@ -177,6 +197,21 @@ watch([searchText, filterStatus, filterFileType], () => {
   })
 })
 
+// 监听滚动加载设置变化
+watch(() => settingsStore.downloadSettings.useScrollLoad, (newVal) => {
+  if (newVal) {
+    const initialSize = settingsStore.downloadSettings.scrollLoadInitialSize ?? 10
+    downloadStore.resetScrollLoad(initialSize)
+  }
+})
+
+// 监听初始大小变化
+watch(() => settingsStore.downloadSettings.scrollLoadInitialSize, (newSize) => {
+  if (useScrollLoad.value && newSize !== undefined) {
+    downloadStore.resetScrollLoad(newSize)
+  }
+})
+
 // 监听排序变化
 watch([sortBy, sortOrder], () => {
   downloadStore.setSortOptions({
@@ -187,6 +222,24 @@ watch([sortBy, sortOrder], () => {
 
 const toggleSortOrder = () => {
   sortOrder.value = sortOrder.value === SortOrder.ASC ? SortOrder.DESC : SortOrder.ASC
+}
+
+// 切换加载模式
+const handleToggleLoadMode = () => {
+  const newMode = !useScrollLoad.value
+  settingsStore.updateDownloadSettings({
+    useScrollLoad: newMode
+  })
+  // 重置滚动加载
+  if (newMode) {
+    const initialSize = settingsStore.downloadSettings.scrollLoadInitialSize ?? 10
+    downloadStore.resetScrollLoad(initialSize)
+  }
+}
+
+// 加载更多（滚动加载）
+const handleLoadMore = () => {
+  downloadStore.loadMoreItems(10)
 }
 
 // 处理设置保存

@@ -28,6 +28,10 @@
           :label="$t('downloadFailed')"
           value="failed"
         />
+        <el-option
+          :label="$t('downloadDeleted')"
+          value="deleted"
+        />
       </el-select>
 
       <el-select
@@ -65,9 +69,27 @@
     </div>
 
     <div class="sort-group">
+      <!-- 分页/滚动加载切换按钮 -->
+      <el-tooltip
+        :content="useScrollLoad ? $t('switchToPagination') : $t('switchToScrollLoad')"
+        placement="top"
+      >
+        <el-button
+          class="switch-mode-btn"
+          @click="$emit('toggleLoadMode')"
+        >
+          <el-icon>
+            <component :is="useScrollLoad ? 'Document' : 'List'" />
+          </el-icon>
+          <span class="switch-mode-text">
+            {{ useScrollLoad ? $t('scrollLoadMode') : $t('paginationMode') }}
+          </span>
+        </el-button>
+      </el-tooltip>
+
       <el-select
         :modelValue="sortBy"
-        style="width: 120px"
+        style="width: 120px; margin-left: 12px"
         @update:modelValue="$emit('update:sortBy', $event)"
       >
         <el-option
@@ -107,13 +129,14 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { Sort } from '@element-plus/icons-vue'
+import { Sort, Document, List } from '@element-plus/icons-vue'
 
 defineProps<{
   filterStatus: string
   filterFileType: string
   sortBy: string
   sortOrder: string
+  useScrollLoad: boolean
 }>()
 
 defineEmits<{
@@ -121,6 +144,7 @@ defineEmits<{
   'update:filterFileType': [value: string]
   'update:sortBy': [value: string]
   toggleSortOrder: []
+  toggleLoadMode: []
 }>()
 
 const { t: $t } = useI18n()
@@ -201,6 +225,36 @@ const { t: $t } = useI18n()
     &:hover {
       background: var(--el-fill-color-light);
       border-color: var(--el-color-primary-light-7);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+    }
+
+    &:active {
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+  }
+
+  .switch-mode-btn {
+    height: 28px;
+    padding: 0 10px;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: var(--el-bg-color-page);
+    border: 1px solid var(--el-border-color);
+    color: var(--el-text-color-regular);
+    transition: all 0.2s ease;
+    border-radius: $radius-sm;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+
+    .switch-mode-text {
+      font-size: 12px;
+    }
+
+    &:hover {
+      background: var(--el-fill-color-light);
+      border-color: var(--el-color-primary-light-7);
+      color: var(--el-color-primary);
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
     }
 

@@ -114,7 +114,11 @@
           />
           <template #dropdown>
             <el-dropdown-menu>
-              <el-dropdown-item command="cancel">
+              <!-- 取消下载：只在下载中或暂停状态时显示 -->
+              <el-dropdown-item
+                v-if="downloadItem.status === 'downloading' || downloadItem.status === 'paused'"
+                command="cancel"
+              >
                 {{ $t('downloadCancelDownload') }}
               </el-dropdown-item>
               <el-dropdown-item command="deleteRecord">
@@ -237,6 +241,7 @@ import {
   CopyDocument
 } from '@element-plus/icons-vue'
 import type { DownloadItem } from '@/types/download'
+import { DownloadStatus } from '@/types/download'
 import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{
@@ -258,7 +263,7 @@ const { t: $t } = useI18n()
 
 // 检查文件是否已删除
 const isFileDeleted = computed(() => {
-  return props.downloadItem.status === 'completed' && props.downloadItem.exists === false
+  return props.downloadItem.status === DownloadStatus.DELETED
 })
 </script>
 

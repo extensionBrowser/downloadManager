@@ -126,9 +126,20 @@ export const convertChromeDownload = (chromeDownload: chrome.downloads.DownloadI
 
   let status = 'downloading'
   if (chromeDownload.state === 'complete') {
-    status = 'completed'
+    // 如果文件已完成但不存在，标记为已删除
+    if (chromeDownload.exists === false) {
+      status = 'deleted'
+    } else {
+      status = 'completed'
+    }
   } else if (chromeDownload.state === 'interrupted') {
-    status = chromeDownload.paused ? 'paused' : 'failed'
+    // 如果下载被中断，根据 canResume 判断状态
+    // canResume=true 表示可以恢复（暂停），canResume=false 表示失败
+    if (chromeDownload.canResume === true) {
+      status = 'paused'
+    } else {
+      status = 'failed'
+    }
   } else if (chromeDownload.state === 'in_progress') {
     status = chromeDownload.paused ? 'paused' : 'downloading'
   }

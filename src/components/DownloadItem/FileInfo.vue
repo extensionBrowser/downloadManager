@@ -53,9 +53,34 @@
           · 📁 {{ directoryPath }}
         </span>
       </div>
-      <!-- 操作按钮 -->
-      <div class="file-actions">
-        <slot name="actions"></slot>
+      <!-- 操作按钮和来源信息 -->
+      <div class="file-actions-row">
+        <div class="file-actions">
+          <slot name="actions"></slot>
+        </div>
+        <!-- 下载来源 -->
+        <div
+          v-if="downloadSource"
+          class="download-source"
+        >
+          <span class="source-label">{{ $t('downloadFrom') }}</span>
+          <a
+            v-if="websiteUrl"
+            :href="websiteUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="source-link"
+            @click.stop
+          >
+            {{ downloadSource }}
+          </a>
+          <span
+            v-else
+            class="source-text"
+          >
+            {{ downloadSource }}
+          </span>
+        </div>
       </div>
     </div>
   </div>
@@ -66,6 +91,7 @@ import { computed } from 'vue'
 import { ElTooltip } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import type { DownloadItem } from '@/types/download'
+import { DownloadStatus } from '@/types/download'
 import { formatFileSize, formatSpeed, formatTime } from '@/utils/download'
 
 const props = defineProps<{
@@ -80,10 +106,69 @@ const { t } = useI18n()
 
 // 检查文件是否已删除
 const isFileDeleted = computed(() => {
-  return props.downloadItem.status === 'completed' && props.downloadItem.exists === false
+  return props.downloadItem.status === DownloadStatus.DELETED
 })
 
 const fileDeletedMessage = computed(() => t('downloadFileDeleted'))
+
+/**
+ * 从 URL 提取域名
+ */
+const extractDomain = (url: string): string | null => {
+  try {
+    const urlObj = new URL(url)
+    return urlObj.hostname
+  } catch {
+    // 如果 URL 解析失败，尝试简单的字符串提取
+    try {
+      const match = url.match(/https?:\/\/([^/]+)/)
+      if (match && match[1]) {
+        return match[1]
+      }
+    } catch {
+      // 解析失败
+    }
+  }
+  return null
+}
+
+/**
+ * 从 URL 提取网站基础 URL（用于跳转，而不是下载）
+ */
+const extractBaseUrl = (url: string): string | null => {
+  try {
+    const urlObj = new URL(url)
+    // 返回 origin（协议 + 域名 + 端口），这样点击会跳转到网站首页
+    return urlObj.origin
+  } catch {
+    // 如果 URL 解析失败，尝试简单的字符串提取
+    try {
+      const match = url.match(/(https?:\/\/[^/]+)/)
+      if (match && match[1]) {
+        return match[1]
+      }
+    } catch {
+      // 解析失败
+    }
+  }
+  return null
+}
+
+// 计算下载来源（显示用）
+const downloadSource = computed(() => {
+  if (!props.downloadItem.url) {
+    return null
+  }
+  return extractDomain(props.downloadItem.url)
+})
+
+// 计算网站基础 URL（跳转用）
+const websiteUrl = computed(() => {
+  if (!props.downloadItem.url) {
+    return null
+  }
+  return extractBaseUrl(props.downloadItem.url)
+})
 </script>
 
 <style lang="scss" scoped>
@@ -109,9 +194,50 @@ const fileDeletedMessage = computed(() => t('downloadFileDeleted'))
   gap: 4px;
 }
 
+.file-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .file-actions {
   display: flex;
   align-items: center;
+}
+
+.download-source {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: $text-secondary;
+  flex-shrink: 0;
+  
+  .source-label {
+    color: $text-secondary;
+  }
+  
+  .source-link {
+    color: var(--el-color-primary, $primary-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    cursor: pointer;
+    
+    &:hover {
+      color: var(--el-color-primary-light-3, $primary-hover);
+      text-decoration: underline;
+    }
+    
+    &:active {
+      color: var(--el-color-primary-dark-2, $primary-active);
+    }
+  }
+  
+  .source-text {
+    color: var(--el-color-primary, $primary-color);
+  }
+  
 }
 
 .file-name {
@@ -134,6 +260,15 @@ const fileDeletedMessage = computed(() => t('downloadFileDeleted'))
 
   .deleted-indicator {
     opacity: 0.8;
+  }
+  
+  // 文件已删除时，文件名添加删除线，但使用更深的颜色保持清晰可读
+  .file-deleted & {
+    color: var(--el-text-color-regular, #374151); // 使用 regular 颜色，接近正常文本，确保清晰可读
+    text-decoration: line-through;
+    text-decoration-color: var(--el-text-color-regular, #374151);
+    font-style: italic;
+    opacity: 1; // 完全不透明，确保最佳可读性
   }
 }
 
