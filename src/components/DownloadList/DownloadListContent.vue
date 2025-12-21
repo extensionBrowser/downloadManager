@@ -9,19 +9,13 @@
         name="fade"
         mode="out-in"
       >
-        <!-- Loading 状态 -->
-        <div
+        <!-- Loading 状态 - 骨架屏 -->
+        <DownloadSkeleton
           v-if="isLoading"
           key="loading"
-          class="loading-state"
-        >
-          <div class="loading-spinner">
-            <div class="spinner"></div>
-          </div>
-          <div class="loading-text">
-            {{ t('commonLoading') }}
-          </div>
-        </div>
+          :count="pageSize"
+          :showProgress="true"
+        />
 
         <!-- 有数据时显示列表 -->
         <transition-group
@@ -118,6 +112,7 @@ import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Top } from '@element-plus/icons-vue'
 import type { DownloadItem } from '@/types/download'
+import DownloadSkeleton from './DownloadSkeleton.vue'
 
 const props = defineProps<{
   isLoading: boolean
@@ -136,6 +131,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+// eslint-disable-next-line no-undef
 const listContainerRef = ref<HTMLElement | null>(null)
 const isLoadingMore = ref(false)
 
@@ -235,6 +231,9 @@ watch(() => props.useScrollLoad, (newVal) => {
   overflow-x: hidden;
   padding: 8px 16px;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .pagination-wrapper {
@@ -327,6 +326,8 @@ watch(() => props.useScrollLoad, (newVal) => {
   display: flex;
   flex-direction: column;
   gap: 5px; // 每项之间8px间距
+  width: 100%;
+  align-items: stretch;
 }
 
 .loading-state {

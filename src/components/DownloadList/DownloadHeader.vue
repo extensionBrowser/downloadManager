@@ -44,34 +44,12 @@
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item
-                  command="minimal-white"
-                  :class="{ 'is-active': currentTheme === 'minimal-white' }"
+                  v-for="theme in themeList"
+                  :key="theme.name"
+                  :command="theme.name"
+                  :class="{ 'is-active': currentTheme === theme.name }"
                 >
-                  明亮现代
-                </el-dropdown-item>
-                <el-dropdown-item
-                  command="tech-blue"
-                  :class="{ 'is-active': currentTheme === 'tech-blue' }"
-                >
-                  科技蓝
-                </el-dropdown-item>
-                <el-dropdown-item
-                  command="cyber-purple"
-                  :class="{ 'is-active': currentTheme === 'cyber-purple' }"
-                >
-                  数字薰衣草
-                </el-dropdown-item>
-                <el-dropdown-item
-                  command="nature-green"
-                  :class="{ 'is-active': currentTheme === 'nature-green' }"
-                >
-                  自然绿色
-                </el-dropdown-item>
-                <el-dropdown-item
-                  command="dark-night"
-                  :class="{ 'is-active': currentTheme === 'dark-night' }"
-                >
-                  柔和深色
+                  {{ theme.label }}
                 </el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -139,9 +117,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Search, Setting, Brush, ChatLineRound } from '@element-plus/icons-vue'
+import { getThemeList } from '@/utils/theme'
 import type { ThemeName } from '@/utils/theme'
 import type { Locale } from '@/i18n/types'
 
@@ -164,6 +143,7 @@ defineEmits<{
 
 const { t: $t } = useI18n()
 const localSearchText = ref(props.searchText)
+const themeList = computed(() => getThemeList())
 
 watch(() => props.searchText, (newVal) => {
   localSearchText.value = newVal

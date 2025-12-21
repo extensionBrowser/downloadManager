@@ -1,26 +1,50 @@
 <template>
-  <div class="app-container">
-    <div class="tech-bg"></div>
-    <div class="app-content">
-      <DownloadList v-if="mounted" />
-      <div v-else class="loading">
-        加载中...
+  <ElConfigProvider :locale="elementPlusLocale">
+    <div class="app-container">
+      <div class="tech-bg"></div>
+      <div class="app-content">
+        <DownloadList v-if="mounted" />
+        <div v-else class="loading">
+          加载中...
+        </div>
       </div>
     </div>
-  </div>
+  </ElConfigProvider>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ElConfigProvider } from 'element-plus'
 import { useSettingsStore } from '@/store/settings'
 import { useDownloadStore } from '@/store/download'
 import { convertChromeDownload } from '@/utils/download'
 import DownloadList from '@/views/DownloadList.vue'
+// @ts-ignore
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
+// @ts-ignore
+import zhTw from 'element-plus/dist/locale/zh-tw.mjs'
+// @ts-ignore
+import en from 'element-plus/dist/locale/en.mjs'
+// @ts-ignore
+import ja from 'element-plus/dist/locale/ja.mjs'
+import type { Locale } from '@/i18n/types'
+
+const elementPlusLocaleMap: Record<Locale, any> = {
+  zh_CN: zhCn,
+  zh_TW: zhTw,
+  en: en,
+  ja: ja
+}
 
 const settingsStore = useSettingsStore()
 const downloadStore = useDownloadStore()
 const mounted = ref(false)
 let pollingInterval: number | null = null
+
+// Element Plus 语言包
+const elementPlusLocale = computed(() => {
+  return elementPlusLocaleMap[settingsStore.locale] || zhCn
+})
 
 // 跟踪最近创建的新下载 ID（用于区分重新下载和普通更新）
 const recentlyCreatedDownloads = new Set<number>()
@@ -128,7 +152,7 @@ onMounted(async() => {
                 // 检查是否是新下载（不存在于列表中）
                 const existingIndex = downloadStore.downloads.findIndex(d => d.id === downloadDelta.id)
                 const isNewDownload = existingIndex === -1
-                
+
                 // 如果是新下载，需要添加
                 // 但需要检查是否已经在 recentlyCreatedDownloads 中，避免重复添加
                 if (isNewDownload) {
@@ -144,10 +168,10 @@ onMounted(async() => {
                   // 这里不需要再次添加，直接返回
                   return
                 }
-                
+
                 // 更新现有下载
                 const isRecentlyCreated = recentlyCreatedDownloads.has(downloadDelta.id)
-                
+
                 if (isRecentlyCreated && existingIndex !== 0) {
                   // 新创建的下载（重新下载）：如果不在最前面，移到最前面
                   // 标记为新下载，不保留旧记录的时间
@@ -175,7 +199,7 @@ onMounted(async() => {
         // 检查是否已经存在（可能 onChanged 先处理了）
         const existingIndex = downloadStore.downloads.findIndex(d => d.id === item.id)
         const isNewDownload = existingIndex === -1
-        
+
         if (isNewDownload) {
           // 按照浏览器默认逻辑：只添加新下载，不删除旧记录
           // 新下载应该添加到最前面，保持与浏览器顺序一致

@@ -16,12 +16,18 @@
     <FilterBar
       :filterStatus="filterStatus"
       :filterFileType="filterFileType"
+      :filterTimeRange="filterTimeRange"
+      :filterSizeRange="filterSizeRange"
+      :filterFileExists="filterFileExists"
       :sortBy="sortBy"
       :sortOrder="sortOrder"
-      :use-scroll-load="useScrollLoad"
+      :useScrollLoad="useScrollLoad"
       @update:filterStatus="filterStatus = $event"
       @update:filterFileType="filterFileType = $event"
-      @update:sortBy="sortBy = $event"
+      @update:filterTimeRange="filterTimeRange = $event"
+      @update:filterSizeRange="filterSizeRange = $event"
+      @update:filterFileExists="filterFileExists = $event"
+      @update:sortBy="sortBy = $event as SortBy"
       @toggleSortOrder="toggleSortOrder"
       @toggleLoadMode="handleToggleLoadMode"
     />
@@ -33,8 +39,8 @@
       :currentPage="downloadStore.currentPage"
       :pageSize="downloadStore.pageSize"
       :total="sortedDownloads.length"
-      :use-scroll-load="useScrollLoad"
-      :has-more-items="downloadStore.hasMoreItems"
+      :useScrollLoad="useScrollLoad"
+      :hasMoreItems="downloadStore.hasMoreItems"
       @pageChange="handlePageChange"
       @sizeChange="handleSizeChange"
       @loadMore="handleLoadMore"
@@ -101,7 +107,7 @@ onMounted(() => {
   currentTheme.value = settingsStore.theme
   currentLocale.value = settingsStore.locale
   i18nLocale.value = settingsStore.locale
-  
+
   // 初始化滚动加载设置
   if (useScrollLoad.value) {
     const initialSize = settingsStore.downloadSettings.scrollLoadInitialSize ?? 10
@@ -112,8 +118,11 @@ onMounted(() => {
 const searchText = ref('')
 const filterStatus = ref<string>('')
 const filterFileType = ref<string>('')
-const sortBy = ref<string>(SortBy.TIME)
-const sortOrder = ref<string>(SortOrder.DESC)
+const filterTimeRange = ref<string>('')
+const filterSizeRange = ref<string>('')
+const filterFileExists = ref<string>('')
+const sortBy = ref<SortBy>(SortBy.TIME)
+const sortOrder = ref<SortOrder>(SortOrder.DESC)
 const showSettings = ref(false)
 
 // 主题和语言状态
@@ -189,11 +198,14 @@ const handleSizeChange = (size: number) => {
 }
 
 // 监听筛选条件变化
-watch([searchText, filterStatus, filterFileType], () => {
+watch([searchText, filterStatus, filterFileType, filterTimeRange, filterSizeRange, filterFileExists], () => {
   downloadStore.setFilterOptions({
     searchText: searchText.value || undefined,
-    status: filterStatus.value || undefined,
-    fileType: filterFileType.value || undefined
+    status: (filterStatus.value as any) || undefined,
+    fileType: (filterFileType.value as any) || undefined,
+    timeRange: (filterTimeRange.value as any) || undefined,
+    sizeRange: (filterSizeRange.value as any) || undefined,
+    fileExists: filterFileExists.value !== '' ? filterFileExists.value === 'true' : undefined
   })
 })
 
@@ -464,14 +476,16 @@ const handleSettingsReset = () => {
       }
     }
 
+    // placeholder 文本字体大小
     .el-select__placeholder {
       font-size: 12px;
-      color: var(--el-text-color-placeholder);
     }
 
     .el-select__selected-item {
       font-size: 12px;
       line-height: 28px;
+      // 不强制设置颜色，使用 Element Plus 默认颜色
+      font-weight: 500;
     }
 
     .el-select__caret {

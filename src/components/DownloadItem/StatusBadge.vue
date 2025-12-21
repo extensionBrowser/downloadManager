@@ -84,7 +84,7 @@ const statusText = computed(() => {
     background: transparent;
     color: var(--el-text-color-regular, #606266);
   }
-  
+
   // 文件已删除时，状态标签也使用正常颜色（兼容旧逻辑）
   &.file-deleted {
     background: transparent;

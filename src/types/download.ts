@@ -70,6 +70,29 @@ export interface DownloadSettings {
   playSound: boolean // 播放声音
   useScrollLoad: boolean // 使用滚动加载（false 为分页模式）
   scrollLoadInitialSize: number // 滚动加载初始显示数量
+  confirmDelete: boolean // 删除文件和记录时是否需要二次确认
+}
+
+/**
+ * 时间范围筛选枚举
+ */
+export enum TimeRange {
+  TODAY = 'today',
+  YESTERDAY = 'yesterday',
+  THIS_WEEK = 'this_week',
+  THIS_MONTH = 'this_month',
+  THIS_YEAR = 'this_year',
+  OLDER = 'older'
+}
+
+/**
+ * 文件大小范围筛选枚举
+ */
+export enum SizeRange {
+  SMALL = 'small', // < 10MB
+  MEDIUM = 'medium', // 10MB - 100MB
+  LARGE = 'large', // 100MB - 1GB
+  VERY_LARGE = 'very_large' // > 1GB
 }
 
 /**
@@ -79,6 +102,9 @@ export interface FilterOptions {
   status?: DownloadStatus // 状态筛选
   fileType?: FileType // 文件类型筛选
   searchText?: string // 搜索文本
+  timeRange?: TimeRange // 时间范围筛选
+  sizeRange?: SizeRange // 文件大小范围筛选
+  fileExists?: boolean // 文件存在状态筛选
 }
 
 /**

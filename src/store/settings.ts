@@ -16,7 +16,8 @@ const defaultDownloadSettings: DownloadSettings = {
   showNotification: true,
   playSound: false,
   useScrollLoad: false, // 默认使用分页模式
-  scrollLoadInitialSize: 10 // 滚动加载初始显示10条
+  scrollLoadInitialSize: 10, // 滚动加载初始显示10条
+  confirmDelete: true // 默认删除文件和记录时需要二次确认
 }
 
 export const useSettingsStore = defineStore('settings', () => {

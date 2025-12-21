@@ -213,31 +213,31 @@ const websiteUrl = computed(() => {
   font-size: 12px;
   color: $text-secondary;
   flex-shrink: 0;
-  
+
   .source-label {
     color: $text-secondary;
   }
-  
+
   .source-link {
     color: var(--el-color-primary, $primary-color);
     text-decoration: none;
     transition: color 0.2s ease;
     cursor: pointer;
-    
+
     &:hover {
       color: var(--el-color-primary-light-3, $primary-hover);
       text-decoration: underline;
     }
-    
+
     &:active {
       color: var(--el-color-primary-dark-2, $primary-active);
     }
   }
-  
+
   .source-text {
     color: var(--el-color-primary, $primary-color);
   }
-  
+
 }
 
 .file-name {
@@ -261,7 +261,7 @@ const websiteUrl = computed(() => {
   .deleted-indicator {
     opacity: 0.8;
   }
-  
+
   // 文件已删除时，文件名添加删除线，但使用更深的颜色保持清晰可读
   .file-deleted & {
     color: var(--el-text-color-regular, #374151); // 使用 regular 颜色，接近正常文本，确保清晰可读

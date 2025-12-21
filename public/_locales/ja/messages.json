@@ -161,6 +161,63 @@
   "downloadFilterByType": {
     "message": "タイプでフィルター"
   },
+  "downloadFilterByTime": {
+    "message": "時間でフィルター"
+  },
+  "downloadTimeRangeToday": {
+    "message": "今日"
+  },
+  "downloadTimeRangeYesterday": {
+    "message": "昨日"
+  },
+  "downloadTimeRangeThisWeek": {
+    "message": "今週"
+  },
+  "downloadTimeRangeThisMonth": {
+    "message": "今月"
+  },
+  "downloadTimeRangeThisYear": {
+    "message": "今年"
+  },
+  "downloadTimeRangeOlder": {
+    "message": "それ以前"
+  },
+  "downloadFilterBySize": {
+    "message": "サイズでフィルター"
+  },
+  "downloadSizeRangeSmall": {
+    "message": "小さい (<10MB)"
+  },
+  "downloadSizeRangeMedium": {
+    "message": "中 (10-100MB)"
+  },
+  "downloadSizeRangeLarge": {
+    "message": "大きい (100MB-1GB)"
+  },
+  "downloadSizeRangeVeryLarge": {
+    "message": "非常に大きい (>1GB)"
+  },
+  "downloadFilterByExists": {
+    "message": "存在状態でフィルター"
+  },
+  "downloadFileExists": {
+    "message": "ファイル存在"
+  },
+  "downloadFileTypeImage": {
+    "message": "画像"
+  },
+  "downloadFileTypeVideo": {
+    "message": "動画"
+  },
+  "downloadFileTypeDocument": {
+    "message": "ドキュメント"
+  },
+  "downloadFileTypeAudio": {
+    "message": "オーディオ"
+  },
+  "downloadFileTypeOther": {
+    "message": "その他"
+  },
   "downloadSortBy": {
     "message": "並び替え"
   },
@@ -301,6 +358,15 @@
   },
   "settingsScrollLoadInitialSizeDesc": {
     "message": "スクロール読み込みモードでの初期表示レコード数（5-50）"
+  },
+  "settingsDeleteConfirm": {
+    "message": "削除確認設定"
+  },
+  "settingsConfirmDelete": {
+    "message": "削除時の二次確認"
+  },
+  "settingsConfirmDeleteDesc": {
+    "message": "ファイルとレコードを削除する際に確認ダイアログを表示するかどうか"
   },
   "switchToPagination": {
     "message": "ページネーションモードに切り替え"

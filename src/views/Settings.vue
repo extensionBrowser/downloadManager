@@ -90,6 +90,26 @@
         </div>
       </div>
     </div>
+
+    <!-- 删除确认设置 -->
+    <div class="settings-section">
+      <div class="section-title">
+        {{ $t('settingsDeleteConfirm') }}
+      </div>
+      <div class="settings-group">
+        <div class="setting-item">
+          <div class="setting-content">
+            <div class="setting-label">
+              {{ $t('settingsConfirmDelete') }}
+            </div>
+            <div class="setting-description">
+              {{ $t('settingsConfirmDeleteDesc') }}
+            </div>
+          </div>
+          <el-switch v-model="formData.confirmDelete" />
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -113,7 +133,8 @@ const formData = ref<Partial<DownloadSettings>>({
   showNotification: true,
   playSound: false,
   useScrollLoad: false,
-  scrollLoadInitialSize: 10
+  scrollLoadInitialSize: 10,
+  confirmDelete: true // 默认需要二次确认
 })
 
 onMounted(async() => {
@@ -127,7 +148,8 @@ onMounted(async() => {
     showNotification: settings.showNotification ?? true,
     playSound: settings.playSound ?? false,
     useScrollLoad: settings.useScrollLoad ?? false,
-    scrollLoadInitialSize: settings.scrollLoadInitialSize ?? 10
+    scrollLoadInitialSize: settings.scrollLoadInitialSize ?? 10,
+    confirmDelete: settings.confirmDelete ?? true
   }
 })
 
@@ -138,7 +160,8 @@ async function handleSave() {
       showNotification: formData.value.showNotification,
       playSound: formData.value.playSound,
       useScrollLoad: formData.value.useScrollLoad,
-      scrollLoadInitialSize: formData.value.scrollLoadInitialSize
+      scrollLoadInitialSize: formData.value.scrollLoadInitialSize,
+      confirmDelete: formData.value.confirmDelete
     })
 
     // 确保设置已保存到 chrome.storage
@@ -166,14 +189,16 @@ const handleReset = () => {
     showNotification: true,
     playSound: false,
     useScrollLoad: false,
-    scrollLoadInitialSize: 10
+    scrollLoadInitialSize: 10,
+    confirmDelete: true
   })
   formData.value = {
     openFolder: false,
     showNotification: true,
     playSound: false,
     useScrollLoad: false,
-    scrollLoadInitialSize: 10
+    scrollLoadInitialSize: 10,
+    confirmDelete: true
   }
   ElMessage.success($t('settingsSaveSuccess'))
 }
@@ -187,7 +212,6 @@ defineExpose({
 
 <style lang="scss" scoped>
 .settings-container {
-  padding: 12px 0;
   width: 100%;
   box-sizing: border-box;
 
@@ -197,22 +221,26 @@ defineExpose({
   }
 
   &::-webkit-scrollbar-track {
-    background: $bg-tertiary;
-    border-radius: $radius-sm;
+    background: transparent;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: $border-color;
-    border-radius: $radius-sm;
+    background: var(--el-border-color);
+    border-radius: 3px;
 
     &:hover {
-      background: $border-hover;
+      background: var(--el-text-color-placeholder);
     }
   }
 }
 
 .settings-section {
   margin-bottom: 20px;
+  padding: 0;
+
+  &:first-child {
+    margin-top: 4px;
+  }
 
   &:last-child {
     margin-bottom: 0;
@@ -220,40 +248,69 @@ defineExpose({
 }
 
 .section-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: $text-primary;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--el-text-color-primary);
   margin-bottom: 8px;
-  padding: 0 16px;
-  letter-spacing: 0.01em;
+  margin-top: 0;
+  padding: 0;
+  padding-left: 12px;
+  letter-spacing: -0.01em;
+  text-transform: none;
+  line-height: 1.4;
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-left: 3px solid var(--el-color-primary);
+
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--el-border-color-lighter);
+    margin-left: 12px;
+  }
+
+  &:first-child {
+    margin-top: 0;
+  }
 }
 
 .settings-group {
-  background: var(--el-bg-color);
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: $radius-md;
-  overflow: hidden;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  overflow: visible;
+  box-shadow: none;
 }
 
 .setting-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--el-border-color-lighter);
-  transition: background-color 0.2s ease;
+  padding: 10px 0;
+  border-bottom: none;
+  transition: none;
+  min-height: auto;
 
   &:last-child {
     border-bottom: none;
   }
 
   &:hover {
-    background: var(--el-fill-color-lighter);
+    background: transparent;
   }
 
   &.nested {
-    padding-left: 32px;
-    background: var(--el-fill-color-extra-light);
+    padding-left: 20px;
+    padding-top: 6px;
+    background: transparent;
+    border-top: none;
+    margin-top: 2px;
+
+    &:first-child {
+      border-top: none;
+    }
   }
 }
 
@@ -261,20 +318,22 @@ defineExpose({
   flex: 1;
   min-width: 0;
   margin-right: 16px;
+  padding-top: 0;
 }
 
 .setting-label {
   font-size: 14px;
-  font-weight: 500;
-  color: $text-primary;
+  font-weight: 400;
+  color: var(--el-text-color-primary);
   margin-bottom: 4px;
   line-height: 1.4;
 }
 
 .setting-description {
   font-size: 12px;
-  color: $text-secondary;
+  color: var(--el-text-color-secondary);
   line-height: 1.4;
+  margin-top: 2px;
 }
 
 .conflict-radio-group {
@@ -290,6 +349,21 @@ defineExpose({
 
 :deep(.el-switch) {
   flex-shrink: 0;
+
+  .el-switch__core {
+    width: 40px;
+    height: 22px;
+    border-radius: 11px;
+
+    &::after {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  &.is-checked .el-switch__core {
+    background-color: var(--el-color-primary);
+  }
 }
 
 :deep(.el-radio) {
@@ -307,6 +381,41 @@ defineExpose({
 :deep(.el-input-number) {
   .el-input__wrapper {
     padding: 4px 8px;
+    border: 1px solid var(--el-border-color-dark) !important;
+    box-shadow: none !important;
+    background: var(--el-bg-color) !important;
+
+    &:hover {
+      border-color: var(--el-border-color-darker) !important;
+    }
+
+    &.is-focus {
+      border-color: var(--el-color-primary) !important;
+      box-shadow: 0 0 0 2px var(--el-color-primary-light-9) !important;
+    }
+  }
+
+  .el-input__inner {
+    text-align: center;
+    color: var(--el-text-color-primary) !important;
+  }
+
+  .el-input-number__decrease,
+  .el-input-number__increase {
+    color: var(--el-text-color-regular);
+    background: transparent;
+
+    &:hover {
+      color: var(--el-color-primary);
+    }
+
+    &:active {
+      color: var(--el-color-primary-dark-2);
+    }
+
+    &.is-disabled {
+      color: var(--el-text-color-disabled);
+    }
   }
 }
 </style>

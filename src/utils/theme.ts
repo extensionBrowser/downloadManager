@@ -3,7 +3,7 @@
  * 支持动态切换主题，通过修改 data-theme 属性实现
  */
 
-export type ThemeName = 'tech-blue' | 'cyber-purple' | 'dark-night' | 'minimal-white' | 'nature-green'
+export type ThemeName = 'tech-blue' | 'cyber-purple' | 'dark-night' | 'minimal-white' | 'warm-orange' | 'deep-space'
 
 const THEME_STORAGE_KEY = 'download-manager-theme'
 
@@ -38,14 +38,16 @@ export const setTheme = (theme: ThemeName): void => {
   localStorage.setItem(THEME_STORAGE_KEY, theme)
 
   // 触发主题变更事件
-  window.dispatchEvent(new CustomEvent('theme-change', { detail: { theme }}))
+  if (typeof window !== 'undefined' && window.CustomEvent) {
+    window.dispatchEvent(new window.CustomEvent('theme-change', { detail: { theme }}))
+  }
 }
 
 /**
  * 验证主题名称是否有效
  */
 const isValidTheme = (theme: string): theme is ThemeName => {
-  return ['tech-blue', 'cyber-purple', 'dark-night', 'minimal-white', 'nature-green'].includes(theme)
+  return ['tech-blue', 'cyber-purple', 'dark-night', 'minimal-white', 'warm-orange', 'deep-space'].includes(theme)
 }
 
 /**
@@ -77,8 +79,9 @@ export const getThemeList = (): Array<{ name: ThemeName; label: string }> => {
     { name: 'minimal-white', label: '明亮现代' },
     { name: 'tech-blue', label: '科技蓝' },
     { name: 'cyber-purple', label: '数字薰衣草' },
-    { name: 'nature-green', label: '自然绿色' },
-    { name: 'dark-night', label: '柔和深色' }
+    { name: 'warm-orange', label: '温暖橙色' },
+    { name: 'dark-night', label: '柔和深色' },
+    { name: 'deep-space', label: '深空黑' }
   ]
 }
 

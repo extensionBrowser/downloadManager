@@ -102,8 +102,7 @@ body {
 :root .tech-bg,
 [data-theme='minimal-white'] .tech-bg,
 [data-theme='tech-blue'] .tech-bg,
-[data-theme='cyber-purple'] .tech-bg,
-[data-theme='nature-green'] .tech-bg {
+[data-theme='cyber-purple'] .tech-bg {
   opacity: 0.25;
 
   &::before {
@@ -290,16 +289,23 @@ body {
 .el-input {
   .el-input__wrapper {
     border-radius: $radius-md !important;
-    box-shadow: none;
+    border: 1px solid var(--el-border-color) !important;
+    box-shadow: none !important;
+
+    &:hover {
+      border-color: var(--el-border-color-darker) !important;
+    }
 
     &.is-focus {
-      box-shadow: 0 0 0 2px var(--el-color-primary-light-9);
+      border-color: var(--el-color-primary) !important;
+      box-shadow: 0 0 0 2px var(--el-color-primary-light-9) !important;
       border-radius: $radius-md !important;
     }
   }
 
   .el-input__inner {
     border-radius: $radius-md;
+    color: var(--el-text-color-primary) !important;
   }
 }
 
@@ -314,13 +320,24 @@ body {
 .el-select {
   .el-select__wrapper {
     border-radius: $radius-md !important;
-    box-shadow: none;
+    border: 1px solid var(--el-border-color) !important;
+    box-shadow: none !important;
+
+    &:hover {
+      border-color: var(--el-border-color-darker) !important;
+    }
 
     &.is-focused {
+      border-color: var(--el-color-primary) !important;
       border-radius: $radius-md !important;
-      box-shadow: none; // 确保 focus 状态下没有 box-shadow
+      box-shadow: 0 0 0 2px var(--el-color-primary-light-9) !important;
       outline: none; // 移除浏览器默认的 outline
     }
+  }
+
+  // 选中文本的颜色
+  .el-select__selected-item {
+    font-weight: 500;
   }
 }
 
@@ -343,8 +360,9 @@ body {
     }
 
     &.is-selected {
-      color: var(--el-color-primary);
-      background: var(--el-color-primary-light-9);
+      color: var(--el-color-primary) !important;
+      background: var(--el-color-primary-light-9) !important;
+      font-weight: 600 !important;
     }
   }
 }
@@ -450,24 +468,52 @@ body {
 
 .el-dialog {
   background: var(--el-bg-color);
-  border: 1px solid var(--el-border-color);
-  border-radius: $radius-lg;
-  max-height: 560px;
+  border: none;
+  border-radius: 12px;
+  max-height: calc(100vh - 80px);
   display: flex;
   flex-direction: column;
-  margin-top: 20px !important;
-  margin-bottom: 20px !important;
+  margin-top: 40px !important;
+  margin-bottom: 40px !important;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.05);
 
   .el-dialog__header {
-    border-bottom: 1px solid var(--el-border-color);
+    border-bottom: none;
     flex-shrink: 0;
-    padding: 10px 20px;
+    padding: 0 24px 16px;
+    display: flex;
+    align-items: center;
+    background: transparent;
   }
 
   .el-dialog__title {
     color: var(--el-text-color-primary);
-    font-size: 16px;
+    font-size: 20px;
     font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .el-dialog__headerbtn {
+    top: 20px;
+    right: 20px;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+    
+    &:hover {
+      background: var(--el-fill-color-light);
+    }
+    
+    .el-dialog__close {
+      font-size: 16px;
+      color: var(--el-text-color-regular);
+      transition: color 0.2s ease;
+      
+      &:hover {
+        color: var(--el-text-color-primary);
+      }
+    }
   }
 
   .el-dialog__body {
@@ -481,30 +527,96 @@ body {
 
   .el-dialog__footer {
     flex-shrink: 0;
-    border-top: 1px solid var(--el-border-color);
-    padding: 10px 20px;
+    border-top: none;
+    padding: 16px 24px 0;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    background: transparent;
+    gap: 8px;
   }
 }
 
-// 设置弹窗特殊样式
+// 设置弹窗特殊样式 - 参考 macOS/Chrome 设计
 .settings-dialog {
+  .el-dialog {
+    max-height: calc(100vh - 80px);
+    width: 560px;
+    height: auto;
+    padding: 0 24px;
+  }
+
+  .el-dialog__header {
+    flex-shrink: 0;
+    padding: 0 0 12px 0;
+  }
+
   .el-dialog__body {
     overflow: hidden;
     position: relative;
-    max-height: calc(560px - 80px); // 弹窗总高度减去头部和底部高度（已减小）
+    flex: 1;
+    min-height: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
   }
   
   .settings-container {
     width: 100%;
-    max-height: 480px; // 内容区域最大高度
+    flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
+    padding: 8px 0;
+    min-height: 0;
+  }
+
+  .el-dialog__footer {
+    flex-shrink: 0;
+    padding: 12px 0 0 0;
   }
 
   .dialog-footer {
     display: flex;
     justify-content: flex-end;
     gap: 8px;
+    width: 100%;
+    
+    .el-button {
+      min-width: 72px;
+      height: 32px;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 6px;
+      padding: 0 16px;
+      transition: all 0.15s ease;
+      
+      &:not(.el-button--primary) {
+        background: transparent;
+        border-color: var(--el-border-color);
+        color: var(--el-text-color-regular);
+        
+        &:hover {
+          background: var(--el-fill-color-light);
+          border-color: var(--el-border-color-darker);
+          color: var(--el-text-color-primary);
+        }
+      }
+      
+      &.el-button--primary {
+        background: var(--el-color-primary);
+        border-color: var(--el-color-primary);
+        
+        &:hover {
+          background: var(--el-color-primary-light-3);
+          border-color: var(--el-color-primary-light-3);
+        }
+        
+        &:active {
+          background: var(--el-color-primary-dark-2);
+          border-color: var(--el-color-primary-dark-2);
+        }
+      }
+    }
   }
 }
 

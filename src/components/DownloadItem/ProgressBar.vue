@@ -2,6 +2,7 @@
   <div
     v-if="showProgress"
     class="progress-background"
+    :class="{ 'is-paused': status === 'paused' }"
     :style="{ width: `${progress}%` }"
   >
     <!-- 流动的小点效果 -->
@@ -75,7 +76,22 @@ const showProgress = computed(() => {
       transparent 100%
     );
     animation: progress-flow 2s ease-in-out infinite;
+    animation-play-state: running;
     z-index: 1;
+  }
+
+  // 暂停状态 - 暂停所有动画，并保持当前位置
+  &.is-paused {
+    .flowing-particles .particle {
+      animation-play-state: paused;
+      // 暂停时使用 both 填充模式，保持当前位置
+      animation-fill-mode: both;
+    }
+
+    &::before {
+      animation-play-state: paused;
+      animation-fill-mode: both;
+    }
   }
 }
 
@@ -113,41 +129,54 @@ const showProgress = computed(() => {
   will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
+  animation-play-state: running;
+  // 保持动画状态，暂停时保持在当前位置
+  animation-fill-mode: both;
+  // 默认状态：确保在动画开始前不可见
+  opacity: 0;
+  left: -10px;
 
   // 每个小点的动画延迟不同，形成流动效果
+  // 使用 backwards 填充模式，确保在延迟期间保持初始状态（不可见）
   &.particle-1 {
     animation: particle-flow 3s ease-in-out infinite;
     animation-delay: 0s;
+    animation-fill-mode: backwards;
     top: 20%;
   }
 
   &.particle-2 {
     animation: particle-flow 3.5s ease-in-out infinite;
     animation-delay: 0.5s;
+    animation-fill-mode: backwards;
     top: 35%;
   }
 
   &.particle-3 {
     animation: particle-flow 4s ease-in-out infinite;
     animation-delay: 1s;
+    animation-fill-mode: backwards;
     top: 50%;
   }
 
   &.particle-4 {
     animation: particle-flow 3.2s ease-in-out infinite;
     animation-delay: 1.5s;
+    animation-fill-mode: backwards;
     top: 65%;
   }
 
   &.particle-5 {
     animation: particle-flow 3.8s ease-in-out infinite;
     animation-delay: 2s;
+    animation-fill-mode: backwards;
     top: 80%;
   }
 
   &.particle-6 {
     animation: particle-flow 4.2s ease-in-out infinite;
     animation-delay: 2.5s;
+    animation-fill-mode: backwards;
     top: 45%;
   }
 }

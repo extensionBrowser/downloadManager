@@ -3,7 +3,7 @@
  */
 
 import type { DownloadItem, FilterOptions, SortOptions } from '@/types/download'
-import { DownloadStatus, FileType, SortBy, SortOrder } from '@/types/download'
+import { DownloadStatus, FileType, SortBy, SortOrder, TimeRange, SizeRange } from '@/types/download'
 import { defineStore } from 'pinia'
 import { computed, ref, watch } from 'vue'
 
@@ -85,6 +85,68 @@ export const useDownloadStore = defineStore('download', () => {
     if (filterOptions.value.searchText) {
       const searchText = filterOptions.value.searchText.toLowerCase()
       result = result.filter(item => item.name.toLowerCase().includes(searchText))
+    }
+
+    // 时间范围筛选
+    if (filterOptions.value.timeRange) {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const todayStart = today.getTime()
+      const yesterdayStart = todayStart - 24 * 60 * 60 * 1000
+      const weekStart = todayStart - 7 * 24 * 60 * 60 * 1000
+      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1).getTime()
+      const yearStart = new Date(today.getFullYear(), 0, 1).getTime()
+
+      result = result.filter(item => {
+        const itemTime = item.startTime
+        switch (filterOptions.value.timeRange) {
+          case TimeRange.TODAY:
+            return itemTime >= todayStart
+          case TimeRange.YESTERDAY:
+            return itemTime >= yesterdayStart && itemTime < todayStart
+          case TimeRange.THIS_WEEK:
+            return itemTime >= weekStart
+          case TimeRange.THIS_MONTH:
+            return itemTime >= monthStart
+          case TimeRange.THIS_YEAR:
+            return itemTime >= yearStart
+          case TimeRange.OLDER:
+            return itemTime < yearStart
+          default:
+            return true
+        }
+      })
+    }
+
+    // 文件大小范围筛选
+    if (filterOptions.value.sizeRange) {
+      const MB = 1024 * 1024
+      const GB = 1024 * MB
+      result = result.filter(item => {
+        const size = item.size
+        switch (filterOptions.value.sizeRange) {
+          case SizeRange.SMALL:
+            return size < 10 * MB
+          case SizeRange.MEDIUM:
+            return size >= 10 * MB && size < 100 * MB
+          case SizeRange.LARGE:
+            return size >= 100 * MB && size < 1 * GB
+          case SizeRange.VERY_LARGE:
+            return size >= 1 * GB
+          default:
+            return true
+        }
+      })
+    }
+
+    // 文件存在状态筛选
+    if (filterOptions.value.fileExists !== undefined) {
+      result = result.filter(item => {
+        if (filterOptions.value.fileExists === true) {
+          return item.exists !== false
+        }
+        return item.exists === false
+      })
     }
 
     return result
@@ -215,7 +277,7 @@ export const useDownloadStore = defineStore('download', () => {
           itemWithPreservedTime.endTime = existing.endTime
         }
       }
-      
+
       // 如果 forcePrepend 为 true，将项移到最前面（用于重新下载）
       if (forcePrepend && index !== 0) {
         downloads.value.splice(index, 1)

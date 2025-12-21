@@ -28,6 +28,13 @@ function copyManifest() {
         copyFileSync(manifestSrc, manifestDest)
       }
 
+      // 复制 PRIVACY.md
+      const privacySrc = resolve(__dirname, 'PRIVACY.md')
+      const privacyDest = resolve(__dirname, 'dist/PRIVACY.md')
+      if (existsSync(privacySrc)) {
+        copyFileSync(privacySrc, privacyDest)
+      }
+
       // 复制 public 目录下的其他文件（如 icons）
       const publicDir = resolve(__dirname, 'public')
 

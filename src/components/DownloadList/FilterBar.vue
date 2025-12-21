@@ -2,11 +2,11 @@
   <div class="filter-bar">
     <div class="filter-group">
       <el-select
-        :modelValue="filterStatus"
+        :modelValue="filterStatus || ''"
         :placeholder="$t('downloadFilterByStatus')"
         clearable
-        style="width: 150px"
-        @update:modelValue="$emit('update:filterStatus', $event)"
+        style="width: 130px"
+        @update:modelValue="$emit('update:filterStatus', $event || '')"
       >
         <el-option
           :label="$t('downloadAll')"
@@ -35,61 +35,130 @@
       </el-select>
 
       <el-select
-        :modelValue="filterFileType"
+        :modelValue="filterFileType || ''"
         :placeholder="$t('downloadFilterByType')"
         clearable
-        style="width: 150px; margin-left: 12px"
-        @update:modelValue="$emit('update:filterFileType', $event)"
+        style="width: 130px"
+        @update:modelValue="$emit('update:filterFileType', $event || '')"
       >
         <el-option
           :label="$t('downloadAll')"
           value=""
         />
         <el-option
-          label="图片"
+          :label="$t('downloadFileTypeImage')"
           value="image"
         />
         <el-option
-          label="视频"
+          :label="$t('downloadFileTypeVideo')"
           value="video"
         />
         <el-option
-          label="文档"
+          :label="$t('downloadFileTypeDocument')"
           value="document"
         />
         <el-option
-          label="音频"
+          :label="$t('downloadFileTypeAudio')"
           value="audio"
         />
         <el-option
-          label="其他"
+          :label="$t('downloadFileTypeOther')"
           value="file"
+        />
+      </el-select>
+
+      <el-select
+        :modelValue="filterTimeRange || ''"
+        :placeholder="$t('downloadFilterByTime')"
+        clearable
+        style="width: 120px"
+        @update:modelValue="$emit('update:filterTimeRange', $event || '')"
+      >
+        <el-option
+          :label="$t('downloadAll')"
+          value=""
+        />
+        <el-option
+          :label="$t('downloadTimeRangeToday')"
+          value="today"
+        />
+        <el-option
+          :label="$t('downloadTimeRangeYesterday')"
+          value="yesterday"
+        />
+        <el-option
+          :label="$t('downloadTimeRangeThisWeek')"
+          value="this_week"
+        />
+        <el-option
+          :label="$t('downloadTimeRangeThisMonth')"
+          value="this_month"
+        />
+        <el-option
+          :label="$t('downloadTimeRangeThisYear')"
+          value="this_year"
+        />
+        <el-option
+          :label="$t('downloadTimeRangeOlder')"
+          value="older"
+        />
+      </el-select>
+
+      <el-select
+        :modelValue="filterSizeRange || ''"
+        :placeholder="$t('downloadFilterBySize')"
+        clearable
+        style="width: 130px"
+        @update:modelValue="$emit('update:filterSizeRange', $event || '')"
+      >
+        <el-option
+          :label="$t('downloadAll')"
+          value=""
+        />
+        <el-option
+          :label="$t('downloadSizeRangeSmall')"
+          value="small"
+        />
+        <el-option
+          :label="$t('downloadSizeRangeMedium')"
+          value="medium"
+        />
+        <el-option
+          :label="$t('downloadSizeRangeLarge')"
+          value="large"
+        />
+        <el-option
+          :label="$t('downloadSizeRangeVeryLarge')"
+          value="very_large"
+        />
+      </el-select>
+
+      <el-select
+        :modelValue="filterFileExists || ''"
+        :placeholder="$t('downloadFilterByExists')"
+        clearable
+        style="width: 120px"
+        @update:modelValue="$emit('update:filterFileExists', $event || '')"
+      >
+        <el-option
+          :label="$t('downloadAll')"
+          value=""
+        />
+        <el-option
+          :label="$t('downloadFileExists')"
+          value="true"
+        />
+        <el-option
+          :label="$t('downloadFileDeleted')"
+          value="false"
         />
       </el-select>
     </div>
 
     <div class="sort-group">
-      <!-- 分页/滚动加载切换按钮 -->
-      <el-tooltip
-        :content="useScrollLoad ? $t('switchToPagination') : $t('switchToScrollLoad')"
-        placement="top"
-      >
-        <el-button
-          class="switch-mode-btn"
-          @click="$emit('toggleLoadMode')"
-        >
-          <el-icon>
-            <component :is="useScrollLoad ? 'Document' : 'List'" />
-          </el-icon>
-          <span class="switch-mode-text">
-            {{ useScrollLoad ? $t('scrollLoadMode') : $t('paginationMode') }}
-          </span>
-        </el-button>
-      </el-tooltip>
-
       <el-select
         :modelValue="sortBy"
-        style="width: 120px; margin-left: 12px"
+        style="width: 100px"
         @update:modelValue="$emit('update:sortBy', $event)"
       >
         <el-option
@@ -123,6 +192,21 @@
           </el-icon>
         </el-button>
       </el-tooltip>
+      <!-- 分页/滚动加载切换按钮 - 仅图标，放在最右侧 -->
+      <el-tooltip
+        :content="useScrollLoad ? $t('switchToPagination') : $t('switchToScrollLoad')"
+        placement="top"
+      >
+        <el-button
+          class="switch-mode-btn"
+          @click="$emit('toggleLoadMode')"
+        >
+          <el-icon>
+            <Document v-if="useScrollLoad" />
+            <List v-else />
+          </el-icon>
+        </el-button>
+      </el-tooltip>
     </div>
   </div>
 </template>
@@ -134,6 +218,9 @@ import { Sort, Document, List } from '@element-plus/icons-vue'
 defineProps<{
   filterStatus: string
   filterFileType: string
+  filterTimeRange: string
+  filterSizeRange: string
+  filterFileExists: string
   sortBy: string
   sortOrder: string
   useScrollLoad: boolean
@@ -142,6 +229,9 @@ defineProps<{
 defineEmits<{
   'update:filterStatus': [value: string]
   'update:filterFileType': [value: string]
+  'update:filterTimeRange': [value: string]
+  'update:filterSizeRange': [value: string]
+  'update:filterFileExists': [value: string]
   'update:sortBy': [value: string]
   toggleSortOrder: []
   toggleLoadMode: []
@@ -163,11 +253,32 @@ const { t: $t } = useI18n()
   position: relative;
   z-index: 9;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
 
-  .filter-group,
+  // 隐藏滚动条但保持滚动功能
+  scrollbar-width: none; // Firefox
+  -ms-overflow-style: none; // IE/Edge
+
+  &::-webkit-scrollbar {
+    display: none; // Chrome/Safari
+  }
+
+  .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+    flex-shrink: 0;
+  }
+
   .sort-group {
     display: flex;
     align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
   }
 
   // 下拉选择框样式
@@ -196,18 +307,21 @@ const { t: $t } = useI18n()
       }
     }
 
+    // placeholder 文本字体大小
     .el-select__placeholder {
       font-size: 12px;
-      color: var(--el-text-color-placeholder);
     }
 
     .el-select__selected-item {
       font-size: 12px;
       line-height: 28px;
+      // 不强制设置颜色，使用 Element Plus 默认颜色
+      font-weight: 500;
     }
 
     .el-select__caret {
       font-size: 12px;
+
     }
   }
 
@@ -234,31 +348,50 @@ const { t: $t } = useI18n()
   }
 
   .switch-mode-btn {
+    width: 28px;
     height: 28px;
-    padding: 0 10px;
-    font-size: 12px;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
+    padding: 0 !important;
+    margin-left: 6px;
     background: var(--el-bg-color-page);
     border: 1px solid var(--el-border-color);
     color: var(--el-text-color-regular);
     transition: all 0.2s ease;
     border-radius: $radius-sm;
+    min-width: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 
-    .switch-mode-text {
-      font-size: 12px;
+    :deep(.el-button__inner) {
+      padding: 0 !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      line-height: 1;
+    }
+
+    :deep(.el-icon) {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
     }
 
     &:hover {
       background: var(--el-fill-color-light);
       border-color: var(--el-color-primary-light-7);
       color: var(--el-color-primary);
+      transform: translateY(-1px);
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
     }
 
     &:active {
+      transform: translateY(0);
       box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
     }
   }

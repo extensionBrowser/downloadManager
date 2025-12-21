@@ -26,13 +26,6 @@ try {
   console.error('Failed to initialize theme:', error)
 }
 
-const elementPlusLocaleMap: Record<string, any> = {
-  zh_CN: zhCn,
-  zh_TW: zhTw,
-  en: en,
-  ja: ja
-}
-
 const bootstrap = async() => {
   const app = createApp(App)
 
@@ -42,12 +35,9 @@ const bootstrap = async() => {
   const i18n = await initI18n()
   app.use(i18n)
 
-  // 获取当前语言对应的 Element Plus 语言包
-  const currentLocale = i18n.global.locale.value as string
-  const elementPlusLocale = elementPlusLocaleMap[currentLocale] || zhCn
-
+  // Element Plus 全局配置（默认语言，实际语言由 ElConfigProvider 控制）
   app.use(ElementPlus, {
-    locale: elementPlusLocale
+    locale: zhCn // 默认使用中文，实际语言由 App.vue 中的 ElConfigProvider 动态控制
   })
 
   for (const [key, component] of Object.entries(ElementPlusIconsVue)) {

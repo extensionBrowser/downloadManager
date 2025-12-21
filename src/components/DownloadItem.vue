@@ -62,8 +62,8 @@ import {
   deleteDownloadRecord,
   deleteDownloadFileAndRecord
 } from '@/utils/download'
-import { convertChromeDownload } from '@/utils/download'
 import { useDownloadStore } from '@/store/download'
+import { useSettingsStore } from '@/store/settings'
 import ProgressBar from './DownloadItem/ProgressBar.vue'
 import FileInfo from './DownloadItem/FileInfo.vue'
 import ActionButtons from './DownloadItem/ActionButtons.vue'
@@ -75,6 +75,7 @@ const props = defineProps<{
 
 const { t: $t } = useI18n()
 const downloadStore = useDownloadStore()
+const settingsStore = useSettingsStore()
 
 // 重试操作的 loading 状态
 const isRetrying = ref(false)
@@ -386,18 +387,24 @@ const handleCommand = async(command: string) => {
       ElMessage.error($t('messageDeleteFailed'))
     }
   } else if (command === 'deleteFileAndRecord') {
-    // 删除文件和记录（需要确认，因为会删除文件）
+    // 删除文件和记录（根据设置决定是否需要确认）
     try {
-      await ElMessageBox.confirm(
-        $t('messageDeleteFileAndRecordConfirm'),
-        $t('commonDelete'),
-        {
-          type: 'warning',
-          confirmButtonText: $t('commonConfirm'),
-          cancelButtonText: $t('commonCancel'),
-          buttonSize: 'default'
-        }
-      )
+      // 检查是否需要二次确认
+      const needConfirm = settingsStore.downloadSettings.confirmDelete ?? true
+
+      if (needConfirm) {
+        await ElMessageBox.confirm(
+          $t('messageDeleteFileAndRecordConfirm'),
+          $t('commonDelete'),
+          {
+            type: 'warning',
+            confirmButtonText: $t('commonConfirm'),
+            cancelButtonText: $t('commonCancel'),
+            buttonSize: 'default'
+          }
+        )
+      }
+
       await deleteDownloadFileAndRecord(props.downloadItem.id)
       downloadStore.removeDownload(props.downloadItem.id)
       ElMessage.success($t('messageDeleteSuccess'))
@@ -447,7 +454,7 @@ const handleCommand = async(command: string) => {
     // 使用禁用状态的背景色和边框色
     background: var(--el-disabled-bg-color, #f5f7fa);
     border-left: 3px solid var(--el-disabled-border-color, #e4e7ed);
-    
+
     // 文件名称使用接近正常文本的颜色（regular），保持清晰可读
     // 通过删除线、斜体和背景色来表明已删除状态，而不是通过降低文字颜色
     .file-name {
@@ -457,36 +464,36 @@ const handleCommand = async(command: string) => {
       font-style: italic;
       opacity: 1; // 完全不透明，确保最佳可读性
     }
-    
+
     .file-meta,
     .download-details {
       color: var(--el-text-color-secondary, #4b5563); // 使用 secondary 颜色，保持清晰
       opacity: 0.85;
     }
-    
+
     .file-icon {
       opacity: 0.7;
       filter: grayscale(40%); // 降低灰度滤镜强度，保持可见度
     }
-    
+
     // 下载来源也使用禁用颜色
     .download-source {
       color: var(--el-text-color-placeholder, #9ca3af);
       opacity: 0.8;
-      
+
       .source-link {
         color: var(--el-text-color-placeholder, #9ca3af);
-        
+
         &:hover {
           color: var(--el-text-color-placeholder, #9ca3af);
           text-decoration: underline;
         }
       }
     }
-    
+
     // 整体稍微降低不透明度，但保持可读性
     opacity: 0.85;
-    
+
     // 禁用 hover 效果，保持禁用状态
     &:hover {
       background: var(--el-disabled-bg-color, #f5f7fa);
