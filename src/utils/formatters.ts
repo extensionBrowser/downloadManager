@@ -51,6 +51,35 @@ export const formatTime = (timestamp: number): string => {
 }
 
 /**
+ * 格式化时间（包含秒）
+ */
+export const formatTimeWithSeconds = (timestamp: number): string => {
+  const date = new Date(timestamp)
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+
+  // 今天
+  if (diff < 24 * 60 * 60 * 1000 && date.getDate() === now.getDate()) {
+    return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  }
+
+  // 昨天
+  if (diff < 48 * 60 * 60 * 1000) {
+    return `昨天 ${date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}`
+  }
+
+  // 更早
+  return date.toLocaleDateString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  })
+}
+
+/**
  * 格式化剩余时间
  */
 export const formatRemainingTime = (remainingBytes: number, speed: number): string => {
@@ -73,5 +102,35 @@ export const formatRemainingTime = (remainingBytes: number, speed: number): stri
   const remainingMinutes = minutes % 60
 
   return `${hours}小时${remainingMinutes}分`
+}
+
+/**
+ * 格式化耗时（毫秒）
+ */
+export const formatDuration = (milliseconds: number): string => {
+  const seconds = Math.floor(milliseconds / 1000)
+
+  if (seconds < 60) {
+    return `${seconds}秒`
+  }
+
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = seconds % 60
+
+  if (minutes < 60) {
+    return remainingSeconds > 0 ? `${minutes}分${remainingSeconds}秒` : `${minutes}分钟`
+  }
+
+  const hours = Math.floor(minutes / 60)
+  const remainingMinutes = minutes % 60
+
+  if (hours < 24) {
+    return remainingMinutes > 0 ? `${hours}小时${remainingMinutes}分钟` : `${hours}小时`
+  }
+
+  const days = Math.floor(hours / 24)
+  const remainingHours = hours % 24
+
+  return remainingHours > 0 ? `${days}天${remainingHours}小时` : `${days}天`
 }
 

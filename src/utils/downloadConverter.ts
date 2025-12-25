@@ -152,7 +152,10 @@ export const convertChromeDownload = (chromeDownload: chrome.downloads.DownloadI
     mimeType: chromeDownload.mime,
     fileType,
     canResume: chromeDownload.canResume,
-    exists: chromeDownload.exists !== false // 默认为 true，如果明确为 false 则标记为不存在
+    exists: chromeDownload.exists !== false, // 默认为 true，如果明确为 false 则标记为不存在
+    referrer: chromeDownload.referrer,
+    incognito: chromeDownload.incognito,
+    danger: chromeDownload.danger
   }
 }
 

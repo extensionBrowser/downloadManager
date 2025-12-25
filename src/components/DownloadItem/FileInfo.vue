@@ -4,30 +4,36 @@
       {{ fileIcon }}
     </div>
     <div class="file-info">
-      <div
-        class="file-name"
-        :title="downloadItem.name"
+      <el-tooltip
+        :content="downloadItem.name"
+        placement="top"
+        :popper-style="{ maxWidth: '400px', wordBreak: 'break-all' }"
+        :show-after="600"
       >
-        {{ downloadItem.name }}
-        <!-- 文件已删除标识 -->
-        <ElTooltip
-          v-if="isFileDeleted"
-          :content="fileDeletedMessage"
-          placement="top"
-          :popperStyle="{ maxWidth: '300px' }"
-        >
-          <span class="deleted-indicator">🗑️</span>
-        </ElTooltip>
-        <!-- 错误指示器（仅在hover时显示详情） -->
-        <ElTooltip
-          v-if="downloadItem.error"
-          :content="errorMessage"
-          placement="top"
-          :popperStyle="{ maxWidth: '300px' }"
-        >
-          <span class="error-indicator">⚠️</span>
-        </ElTooltip>
-      </div>
+        <div class="file-name">
+          <span class="file-name-text">{{ downloadItem.name }}</span>
+          <!-- 文件已删除标识 -->
+          <el-tooltip
+            v-if="isFileDeleted"
+            :content="fileDeletedMessage"
+            placement="top"
+            :popper-style="{ maxWidth: '300px' }"
+            :show-after="600"
+          >
+            <span class="deleted-indicator">🗑️</span>
+          </el-tooltip>
+          <!-- 错误指示器（仅在hover时显示详情） -->
+          <el-tooltip
+            v-if="downloadItem.error"
+            :content="errorMessage"
+            placement="top"
+            :popper-style="{ maxWidth: '300px' }"
+            :show-after="600"
+          >
+            <span class="error-indicator">⚠️</span>
+          </el-tooltip>
+        </div>
+      </el-tooltip>
       <!-- 下载中的详细信息 -->
       <div
         v-if="downloadItem.status === 'downloading'"
@@ -45,13 +51,17 @@
       >
         <span>{{ formatFileSize(downloadItem.size) }}</span>
         <span>· {{ formatTime(downloadItem.startTime) }}</span>
-        <span
+        <el-tooltip
           v-if="downloadItem.path"
-          class="file-path-inline"
-          :title="downloadItem.path"
+          :content="downloadItem.path"
+          placement="top"
+          :popper-style="{ maxWidth: '400px', wordBreak: 'break-all' }"
+          :show-after="600"
         >
-          · 📁 {{ directoryPath }}
-        </span>
+          <span class="file-path-inline">
+            · 📁 {{ directoryPath }}
+          </span>
+        </el-tooltip>
       </div>
       <!-- 操作按钮和来源信息 -->
       <div class="file-actions-row">
@@ -88,7 +98,6 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { ElTooltip } from 'element-plus'
 import { useI18n } from 'vue-i18n'
 import type { DownloadItem } from '@/types/download'
 import { DownloadStatus } from '@/types/download'
@@ -245,12 +254,19 @@ const websiteUrl = computed(() => {
   font-weight: 500;
   color: $text-primary;
   margin-bottom: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   display: flex;
   align-items: center;
   gap: 4px;
+  min-width: 0; // 允许 flex 容器收缩
+  overflow: hidden; // 隐藏溢出内容
+
+  .file-name-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0; // 允许文本元素收缩
+    flex: 1; // 占据剩余空间
+  }
 
   .error-indicator,
   .deleted-indicator {

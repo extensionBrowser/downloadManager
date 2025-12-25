@@ -62,6 +62,12 @@
   "commonLoading": {
     "message": "読み込み中..."
   },
+  "commonYes": {
+    "message": "はい"
+  },
+  "commonNo": {
+    "message": "いいえ"
+  },
   "downloadTitle": {
     "message": "ダウンロードマネージャー"
   },
@@ -148,6 +154,66 @@
   },
   "downloadUrl": {
     "message": "ダウンロードURL"
+  },
+  "downloadFileDetails": {
+    "message": "ファイル詳細"
+  },
+  "downloadFileName": {
+    "message": "ファイル名"
+  },
+  "downloadFilePath": {
+    "message": "ファイルパス"
+  },
+  "downloadFileSize": {
+    "message": "ファイルサイズ"
+  },
+  "downloadStartTime": {
+    "message": "開始時間"
+  },
+  "downloadEndTime": {
+    "message": "終了時間"
+  },
+  "downloadMimeType": {
+    "message": "MIMEタイプ"
+  },
+  "downloadFileType": {
+    "message": "ファイルタイプ"
+  },
+  "downloadError": {
+    "message": "エラー"
+  },
+  "downloadCanResume": {
+    "message": "再開可能"
+  },
+  "downloadId": {
+    "message": "ダウンロードID"
+  },
+  "downloadReceivedBytes": {
+    "message": "受信バイト数"
+  },
+  "downloadDuration": {
+    "message": "ダウンロード時間"
+  },
+  "downloadRemainingTime": {
+    "message": "残り時間"
+  },
+  "downloadReferrer": {
+    "message": "参照元"
+  },
+  "downloadIncognito": {
+    "message": "シークレットモード"
+  },
+  "downloadDanger": {
+    "message": "セキュリティレベル"
+  },
+  "downloadDangerSafe": {
+    "message": "安全"
+  },
+  "downloadDangerUnsafe": {
+    "message": "不安全"
+  },
+  "downloadDangerUserConfirmed": {
+    "message": "ユーザー確認済み"
   },
   "downloadFrom": {
     "message": "出典"

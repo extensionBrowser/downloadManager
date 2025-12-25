@@ -59,6 +59,9 @@ export interface DownloadItem {
   fileType: FileType // 文件类型
   canResume?: boolean // 是否可以恢复下载
   exists?: boolean // 文件是否存在
+  referrer?: string // 引用来源 URL
+  incognito?: boolean // 是否在隐私模式下下载
+  danger?: string // 危险级别
 }
 
 /**

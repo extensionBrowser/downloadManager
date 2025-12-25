@@ -2,21 +2,15 @@
  * Vue 3 应用入口文件
  */
 
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
+import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
-import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+import { createPinia } from 'pinia'
+import { createApp } from 'vue'
 // @ts-ignore
-import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
-// @ts-ignore
-import zhTw from 'element-plus/dist/locale/zh-tw.mjs'
-// @ts-ignore
-import en from 'element-plus/dist/locale/en.mjs'
-// @ts-ignore
-import ja from 'element-plus/dist/locale/ja.mjs'
-import { initTheme } from '@/utils/theme'
 import { initI18n } from '@/i18n'
+import { initTheme } from '@/utils/theme'
+import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 import App from './App.vue'
 import './styles/main.scss'
 

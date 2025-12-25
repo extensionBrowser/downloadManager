@@ -5,10 +5,11 @@
       v-if="downloadItem.status !== 'completed'"
       class="actions-row"
     >
-      <ElTooltip
+      <el-tooltip
         v-if="downloadItem.status === 'downloading'"
         :content="$t('downloadPauseDownload')"
         placement="top"
+        :show-after="600"
       >
         <el-button
           size="small"
@@ -16,13 +17,14 @@
           :icon="VideoPause"
           @click="$emit('pause')"
         />
-      </ElTooltip>
+      </el-tooltip>
 
       <!-- 暂停状态：根据 canResume 决定显示继续下载还是重新下载 -->
-      <ElTooltip
+      <el-tooltip
         v-if="downloadItem.status === 'paused' && downloadItem.canResume === true"
         :content="$t('downloadResumeDownload')"
         placement="top"
+        :show-after="600"
       >
         <el-button
           size="small"
@@ -31,12 +33,13 @@
           :icon="VideoPlay"
           @click="$emit('resume')"
         />
-      </ElTooltip>
+      </el-tooltip>
 
-      <ElTooltip
+      <el-tooltip
         v-if="downloadItem.status === 'paused' && downloadItem.canResume !== true"
         :content="$t('downloadRedownload')"
         placement="top"
+        :show-after="600"
       >
         <el-button
           size="small"
@@ -47,13 +50,14 @@
           :disabled="isRetrying"
           @click="$emit('retry')"
         />
-      </ElTooltip>
+      </el-tooltip>
 
       <!-- 失败状态：重试下载 -->
-      <ElTooltip
+      <el-tooltip
         v-if="downloadItem.status === 'failed'"
         :content="$t('downloadRetryDownload')"
         placement="top"
+        :show-after="600"
       >
         <el-button
           size="small"
@@ -64,13 +68,14 @@
           :disabled="isRetrying"
           @click="$emit('retry')"
         />
-      </ElTooltip>
+      </el-tooltip>
 
       <!-- 取消状态：重新下载 -->
-      <ElTooltip
+      <el-tooltip
         v-if="downloadItem.status === 'cancelled'"
         :content="$t('downloadRedownload')"
         placement="top"
+        :show-after="600"
       >
         <el-button
           size="small"
@@ -81,15 +86,15 @@
           :disabled="isRetrying"
           @click="$emit('retry')"
         />
-      </ElTooltip>
+      </el-tooltip>
 
       <!-- 复制下载地址 -->
-      <ElTooltip
+      <el-tooltip
         v-if="downloadItem.url"
         :content="downloadItem.url"
         placement="top"
-        :popperStyle="{ maxWidth: '400px', wordBreak: 'break-all' }"
-        :showAfter="300"
+        :popper-style="{ maxWidth: '400px', wordBreak: 'break-all' }"
+        :show-after="300"
       >
         <el-button
           size="small"
@@ -97,11 +102,12 @@
           :icon="CopyDocument"
           @click="$emit('copyUrl')"
         />
-      </ElTooltip>
+      </el-tooltip>
 
-      <ElTooltip
+      <el-tooltip
         :content="$t('commonDelete')"
         placement="top"
+        :show-after="600"
       >
         <el-dropdown
           trigger="click"
@@ -127,7 +133,7 @@
             </el-dropdown-menu>
           </template>
         </el-dropdown>
-      </ElTooltip>
+      </el-tooltip>
     </div>
 
     <!-- 已完成状态的操作 -->
@@ -137,9 +143,10 @@
     >
       <!-- 文件已删除：显示重新下载按钮 -->
       <template v-if="isFileDeleted">
-        <ElTooltip
+        <el-tooltip
           :content="$t('downloadRedownload')"
           placement="top"
+          :show-after="600"
         >
           <el-button
             size="small"
@@ -150,14 +157,15 @@
             :disabled="isRetrying"
             @click="$emit('retry')"
           />
-        </ElTooltip>
+        </el-tooltip>
       </template>
 
       <!-- 文件存在：显示打开文件夹和打开文件按钮 -->
       <template v-else>
-        <ElTooltip
+        <el-tooltip
           :content="$t('downloadOpenFolder')"
           placement="top"
+          :show-after="600"
         >
           <el-button
             size="small"
@@ -165,11 +173,12 @@
             :icon="FolderOpened"
             @click="$emit('openFolder')"
           />
-        </ElTooltip>
+        </el-tooltip>
 
-        <ElTooltip
+        <el-tooltip
           :content="$t('downloadOpenFile')"
           placement="top"
+          :show-after="600"
         >
           <el-button
             size="small"
@@ -177,16 +186,16 @@
             :icon="Document"
             @click="$emit('openFile')"
           />
-        </ElTooltip>
+        </el-tooltip>
       </template>
 
       <!-- 复制下载地址 -->
-      <ElTooltip
+      <el-tooltip
         v-if="downloadItem.url"
         :content="downloadItem.url"
         placement="top"
-        :popperStyle="{ maxWidth: '400px', wordBreak: 'break-all' }"
-        :showAfter="300"
+        :popper-style="{ maxWidth: '400px', wordBreak: 'break-all' }"
+        :show-after="300"
       >
         <el-button
           size="small"
@@ -194,11 +203,27 @@
           :icon="CopyDocument"
           @click="$emit('copyUrl')"
         />
-      </ElTooltip>
+      </el-tooltip>
 
-      <ElTooltip
+      <!-- 文件详情：只在文件存在时显示 -->
+      <el-tooltip
+        v-if="!isFileDeleted"
+        :content="$t('downloadFileDetails')"
+        placement="top"
+        :show-after="600"
+      >
+        <el-button
+          size="small"
+          circle
+          :icon="View"
+          @click="$emit('showDetails')"
+        />
+      </el-tooltip>
+
+      <el-tooltip
         :content="$t('commonDelete')"
         placement="top"
+        :show-after="600"
       >
         <el-dropdown
           trigger="click"
@@ -223,14 +248,13 @@
             </el-dropdown-menu>
           </template>
         </el-dropdown>
-      </ElTooltip>
+      </el-tooltip>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { ElTooltip } from 'element-plus'
 import {
   VideoPause,
   VideoPlay,
@@ -238,7 +262,8 @@ import {
   FolderOpened,
   Document,
   Delete,
-  CopyDocument
+  CopyDocument,
+  View
 } from '@element-plus/icons-vue'
 import type { DownloadItem } from '@/types/download'
 import { DownloadStatus } from '@/types/download'
@@ -257,6 +282,7 @@ defineEmits<{
   openFolder: []
   openFile: []
   command: [command: string]
+  showDetails: []
 }>()
 
 const { t: $t } = useI18n()

@@ -179,6 +179,7 @@
           sortOrder === 'asc' ? $t('downloadSortOrderAsc') : $t('downloadSortOrderDesc')
         "
         placement="top"
+        :show-after="600"
       >
         <el-button
           class="sort-order-btn"
@@ -196,6 +197,7 @@
       <el-tooltip
         :content="useScrollLoad ? $t('switchToPagination') : $t('switchToScrollLoad')"
         placement="top"
+        :show-after="600"
       >
         <el-button
           class="switch-mode-btn"

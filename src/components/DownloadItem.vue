@@ -34,6 +34,7 @@
               @openFolder="handleOpenFolder"
               @openFile="handleOpenFile"
               @command="handleCommand"
+              @showDetails="showDetailsDialog = true"
             />
           </template>
         </FileInfo>
@@ -42,6 +43,12 @@
         <StatusBadge :downloadItem="downloadItem" />
       </div>
     </div>
+
+    <!-- 文件详情弹窗 -->
+    <FileDetailsDialog
+      v-model:visible="showDetailsDialog"
+      :download-item="downloadItem"
+    />
   </div>
 </template>
 
@@ -68,6 +75,7 @@ import ProgressBar from './DownloadItem/ProgressBar.vue'
 import FileInfo from './DownloadItem/FileInfo.vue'
 import ActionButtons from './DownloadItem/ActionButtons.vue'
 import StatusBadge from './DownloadItem/StatusBadge.vue'
+import FileDetailsDialog from './DownloadItem/FileDetailsDialog.vue'
 
 const props = defineProps<{
   downloadItem: IDownloadItem
@@ -79,6 +87,9 @@ const settingsStore = useSettingsStore()
 
 // 重试操作的 loading 状态
 const isRetrying = ref(false)
+
+// 详情弹窗显示状态
+const showDetailsDialog = ref(false)
 
 const statusClass = computed(() => `status-${props.downloadItem.status}`)
 

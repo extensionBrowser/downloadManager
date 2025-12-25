@@ -32,6 +32,7 @@
         <el-tooltip
           :content="$t('settingsTheme')"
           placement="bottom"
+          :show-after="600"
         >
           <el-dropdown
             trigger="click"
@@ -60,6 +61,7 @@
         <el-tooltip
           :content="$t('settingsLanguage')"
           placement="bottom"
+          :show-after="600"
         >
           <el-dropdown
             trigger="click"
@@ -104,6 +106,7 @@
         <el-tooltip
           :content="$t('commonSettings')"
           placement="bottom"
+          :show-after="600"
         >
           <el-button
             :icon="Setting"

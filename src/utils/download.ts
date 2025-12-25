@@ -8,7 +8,9 @@ export {
   formatFileSize,
   formatSpeed,
   formatTime,
-  formatRemainingTime
+  formatTimeWithSeconds,
+  formatRemainingTime,
+  formatDuration
 } from './formatters'
 
 // 转换工具
