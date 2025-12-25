@@ -476,6 +476,9 @@
   "messageDeleteRecordConfirm": {
     "message": "このダウンロード記録を削除してもよろしいですか？ファイルはディスクに残ります。"
   },
+  "messageDeleteRecordConfirmShort": {
+    "message": "削除しますか？"
+  },
   "messageDeleteFileAndRecordConfirm": {
     "message": "このダウンロード記録とファイルを削除してもよろしいですか？この操作は元に戻せません。"
   },

@@ -671,6 +671,20 @@ body {
   backdrop-filter: blur(10px);
 }
 
+// Popconfirm 气泡确认框 - 确保按钮间距
+.el-popconfirm {
+  .el-popconfirm__action {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+
+    .el-button {
+      margin-left: 0 !important;
+    }
+  }
+}
+
 // 工具提示 - 使用 Element Plus CSS 变量
 .el-tooltip__popper {
   background: var(--el-bg-color-overlay);

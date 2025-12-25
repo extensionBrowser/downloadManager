@@ -123,14 +123,22 @@
         placement="top"
         :showAfter="600"
       >
-        <!-- 只有一个选项时，直接点击删除 -->
-        <el-button
+        <!-- 只有一个选项时，直接点击删除（带确认框） -->
+        <el-popconfirm
           v-if="(downloadItem.status !== 'downloading' && downloadItem.status !== 'paused')"
-          size="small"
-          circle
-          :icon="Delete"
-          @click="$emit('command', 'deleteRecord')"
-        />
+          :title="$t('messageDeleteRecordConfirmShort')"
+          :confirmButtonText="$t('commonYes')"
+          :cancelButtonText="$t('commonNo')"
+          @confirm="$emit('command', 'deleteRecord')"
+        >
+          <template #reference>
+            <el-button
+              size="small"
+              circle
+              :icon="Delete"
+            />
+          </template>
+        </el-popconfirm>
         <!-- 多个选项时，显示下拉菜单 -->
         <el-dropdown
           v-else
@@ -245,14 +253,22 @@
         placement="top"
         :showAfter="600"
       >
-        <!-- 只有一个选项时（文件已删除），直接点击删除 -->
-        <el-button
+        <!-- 只有一个选项时（文件已删除），直接点击删除（带确认框） -->
+        <el-popconfirm
           v-if="isFileDeleted"
-          size="small"
-          circle
-          :icon="Delete"
-          @click="$emit('command', 'deleteRecord')"
-        />
+          :title="$t('messageDeleteRecordConfirmShort')"
+          :confirmButtonText="$t('commonYes')"
+          :cancelButtonText="$t('commonNo')"
+          @confirm="$emit('command', 'deleteRecord')"
+        >
+          <template #reference>
+            <el-button
+              size="small"
+              circle
+              :icon="Delete"
+            />
+          </template>
+        </el-popconfirm>
         <!-- 多个选项时（文件存在），显示下拉菜单 -->
         <el-dropdown
           v-else

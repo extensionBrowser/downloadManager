@@ -476,6 +476,9 @@
   "messageDeleteRecordConfirm": {
     "message": "確定要刪除這條下載記錄嗎？檔案將保留在磁碟上。"
   },
+  "messageDeleteRecordConfirmShort": {
+    "message": "確定刪除？"
+  },
   "messageDeleteFileAndRecordConfirm": {
     "message": "確定要刪除這條下載記錄和檔案嗎？此操作不可恢復。"
   },

@@ -476,6 +476,9 @@
   "messageDeleteRecordConfirm": {
     "message": "Are you sure you want to delete this download record? The file will remain on disk."
   },
+  "messageDeleteRecordConfirmShort": {
+    "message": "Delete?"
+  },
   "messageDeleteFileAndRecordConfirm": {
     "message": "Are you sure you want to delete this download record and file? This action cannot be undone."
   },
