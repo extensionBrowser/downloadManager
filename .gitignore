@@ -21,6 +21,8 @@ download-manager-*.zip
 !.vscode/extensions.json
 .idea
 .DS_Store
+.cursor
+.shared
 *.suo
 *.ntvs*
 *.njsproj
