@@ -109,6 +109,11 @@ export const useSettingsStore = defineStore('settings', () => {
     theme.value = newTheme
     setTheme(newTheme)
     saveSettings()
+    
+    // 如果设置为auto，需要监听时间变化
+    if (newTheme === 'auto') {
+      // 主题切换逻辑已在 setTheme 中处理
+    }
   }
 
   // 设置语言

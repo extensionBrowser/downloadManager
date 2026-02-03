@@ -102,6 +102,23 @@ onMounted(async() => {
   // 加载设置
   settingsStore.loadSettings()
 
+  // 监听主题变化事件（包括自动主题切换）
+  if (typeof window !== 'undefined') {
+    const handleThemeChange = ((e: CustomEvent) => {
+      const { theme: newTheme, isAuto } = e.detail || {}
+      // 如果是自动主题切换，不需要更新 store（保持 theme 值为 'auto'）
+      // 如果是手动切换主题，store 会在 setThemeValue 中更新
+      // 这里主要是为了响应自动主题的时间变化
+    }) as EventListener
+
+    window.addEventListener('theme-change', handleThemeChange)
+
+    // 清理事件监听器
+    onUnmounted(() => {
+      window.removeEventListener('theme-change', handleThemeChange)
+    })
+  }
+
   // 加载下载记录
   try {
     // 使用 orderBy 确保按时间倒序排列（最新的在前面），与浏览器默认顺序一致
